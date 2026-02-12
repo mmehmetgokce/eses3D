@@ -86,14 +86,16 @@ const AdminRequests = () => {
         );
     };
 
-    // Müşteri telefonu varsa müşteriye, yoksa işletme numarasına yönlendir
+    // Müşteriye WhatsApp mesajı (ürün detayları ile)
     const getWhatsAppLink = (request) => {
         const targetNumber = request.customerPhone || WHATSAPP_NUMBER;
-        const isCustomer = !!request.customerPhone;
 
-        const message = isCustomer
-            ? `Merhaba ${request.customerName || ''} ${request.customerSurname || ''}, ${request.requestId} numaralı talebiniz hakkında bilgi vermek istiyoruz.`
-            : `Merhaba, ${request.requestId} numaralı talep hakkında:\n\nÜrün Sayısı: ${request.items?.length || 0}`;
+        // Ürün listesini oluştur
+        const itemsList = request.items?.map(item =>
+            `• ${item.productName || item.product?.name || 'Ürün'} - ${item.quantity} adet`
+        ).join('\n') || '';
+
+        const message = `Merhaba ${request.customerName || ''} ${request.customerSurname || ''}, ${request.requestId} numaralı talebiniz hakkında bilgi vermek istiyoruz.\n\nTalep ettiğiniz ürünler:\n${itemsList}`;
 
         return `https://wa.me/${targetNumber}?text=${encodeURIComponent(message)}`;
     };

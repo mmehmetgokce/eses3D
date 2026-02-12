@@ -14,8 +14,8 @@ const HomePage = () => {
         },
         {
             icon: <Palette className="w-8 h-8" />,
-            title: 'Özel Tasarım',
-            description: 'Kendi STL dosyanızı gönderin, birlikte üretim detaylarını konuşalım.'
+            title: 'Özel Tasarım ve İstekler',
+            description: 'Kendi STL dosyanızı gönderin veya gördüğünüz bir ürünü sorun, birlikte değerlendirelim.'
         },
         {
             icon: <MessageCircle className="w-8 h-8" />,
@@ -122,15 +122,15 @@ const HomePage = () => {
                 <div className="container mx-auto px-4 relative z-10">
                     <div className="bg-white/80 dark:bg-dark-800/80 backdrop-blur-md border border-light-300 dark:border-dark-700 rounded-2xl p-8 md:p-12 text-center max-w-3xl mx-auto shadow-xl">
                         <h2 className="text-2xl md:text-3xl font-bold mb-4 text-light-900 dark:text-white">
-                            Özel Tasarımınız mı Var?
+                            Özel Tasarımınız mı Var? Bir Ürün mü Arıyorsunuz?
                         </h2>
                         <p className="text-light-600 dark:text-dark-300 mb-6">
-                            Elinizde bulunan STL dosyalarıyla bizimle WhatsApp üzerinden iletişime geçebilirsiniz.
-                            Dosyanız üretime uygunsa, baskı süreci ve detaylar birlikte değerlendirilir.
+                            STL dosyanızla baskı yaptırmak istiyorsanız veya bir yerde gördüğünüz bir modeli sormak istiyorsanız,
+                            WhatsApp üzerinden bize ulaşabilirsiniz.
                         </p>
                         <Link to="/ozel-tasarim" className="btn-primary inline-flex items-center space-x-2">
                             <Palette className="w-5 h-5" />
-                            <span>Özel Tasarım Hakkında</span>
+                            <span>Detaylı Bilgi</span>
                         </Link>
                     </div>
                 </div>

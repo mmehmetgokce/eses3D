@@ -44,7 +44,7 @@ const Footer = () => {
                                 </li>
                                 <li>
                                     <Link to="/ozel-tasarim" className="text-dark-400 hover:text-primary-500 text-sm transition-colors">
-                                        Özel Tasarım
+                                        Özel Tasarım ve İstekler
                                     </Link>
                                 </li>
                             </ul>

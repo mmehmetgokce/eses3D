@@ -12,7 +12,7 @@ const Header = () => {
     const navLinks = [
         { to: '/', label: 'Ana Sayfa' },
         { to: '/urunler', label: 'Ürünler' },
-        { to: '/ozel-tasarim', label: 'Özel Tasarım' },
+        { to: '/ozel-tasarim', label: 'Özel Tasarım ve İstekler' },
     ];
 
     return (
