@@ -88,7 +88,6 @@ const AdminRequests = () => {
 
     // Müşteriye WhatsApp mesajı gönder (ürün detayları ile)
     const handleWhatsApp = (request) => {
-        alert('DEBUG: items=' + JSON.stringify(request.items));
         const targetNumber = request.customerPhone || WHATSAPP_NUMBER;
         const items = request.items || [];
 
@@ -337,18 +336,14 @@ const AdminRequests = () => {
                                 </div>
                             )}
 
-                            {/* WhatsApp - Sadece telefon varsa göster */}
-                            {selectedRequest.customerPhone && selectedRequest.customerPhone.trim() !== '' && (
-                                <a
-                                    href={`https://wa.me/${selectedRequest.customerPhone}?text=${encodeURIComponent(`Merhaba ${getCustomerName(selectedRequest) || ''}, ${selectedRequest.requestId} numaralı talebiniz hakkında bilgi vermek istiyoruz.`)}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="btn-whatsapp w-full flex items-center justify-center space-x-2"
-                                >
-                                    <MessageCircle className="w-5 h-5" />
-                                    <span>Müşteriye WhatsApp ile Ulaş ({formatPhoneDisplay(selectedRequest.customerPhone)})</span>
-                                </a>
-                            )}
+                            {/* WhatsApp */}
+                            <button
+                                onClick={() => handleWhatsApp(selectedRequest)}
+                                className="btn-whatsapp w-full flex items-center justify-center space-x-2"
+                            >
+                                <MessageCircle className="w-5 h-5" />
+                                <span>Müşteriye WhatsApp ile Ulaş ({formatPhoneDisplay(selectedRequest.customerPhone)})</span>
+                            </button>
                         </div>
                     </div>
                 </div>
