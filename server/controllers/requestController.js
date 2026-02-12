@@ -14,14 +14,21 @@ export const createRequest = async (req, res) => {
             });
         }
 
+        if (!customerName || !customerSurname || !customerPhone) {
+            return res.status(400).json({
+                success: false,
+                message: 'Ad, soyad ve telefon numarası zorunludur'
+            });
+        }
+
         // Benzersiz talep ID'si oluştur
         const requestId = await Request.generateRequestId();
 
         const request = await Request.create({
             requestId,
-            customerName: customerName || '',
-            customerSurname: customerSurname || '',
-            customerPhone: customerPhone || '',
+            customerName,
+            customerSurname,
+            customerPhone,
             items,
             generalNote
         });

@@ -29,17 +29,17 @@ const requestSchema = new mongoose.Schema({
     },
     customerName: {
         type: String,
-        default: '',
+        required: [true, 'Ad zorunludur'],
         trim: true
     },
     customerSurname: {
         type: String,
-        default: '',
+        required: [true, 'Soyad zorunludur'],
         trim: true
     },
     customerPhone: {
         type: String,
-        default: '',
+        required: [true, 'Telefon numarası zorunludur'],
         trim: true
     },
     items: [requestItemSchema],

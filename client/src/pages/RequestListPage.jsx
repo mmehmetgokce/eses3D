@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, Phone } from 'lucide-react';
+import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, X, AlertTriangle } from 'lucide-react';
 import { useRequest } from '../context/RequestContext';
 import { createRequest } from '../services/api';
 import toast from 'react-hot-toast';
@@ -8,22 +8,17 @@ import toast from 'react-hot-toast';
 const RequestListPage = () => {
     const navigate = useNavigate();
     const { items, removeItem, updateQuantity, updateNote, clearList } = useRequest();
-
     const [customerName, setCustomerName] = useState('');
     const [customerSurname, setCustomerSurname] = useState('');
     const [customerPhone, setCustomerPhone] = useState('');
     const [generalNote, setGeneralNote] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
 
     // Telefon numarası formatı: 5XX XXX XX XX
     const formatPhoneNumber = (value) => {
-        // Sadece rakamları al
         const numbers = value.replace(/\D/g, '');
-
-        // İlk 10 karakteri al (5XXXXXXXXX)
         const limited = numbers.slice(0, 10);
-
-        // Formatla: 5XX XXX XX XX
         if (limited.length <= 3) return limited;
         if (limited.length <= 6) return `${limited.slice(0, 3)} ${limited.slice(3)}`;
         if (limited.length <= 8) return `${limited.slice(0, 3)} ${limited.slice(3, 6)} ${limited.slice(6)}`;
@@ -44,29 +39,54 @@ const RequestListPage = () => {
         return '';
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
+    // Form doğrulama
+    const validateForm = () => {
         if (items.length === 0) {
             toast.error('Talep listeniz boş!');
-            return;
+            return false;
         }
 
+        if (!customerName.trim()) {
+            toast.error('Ad alanı zorunludur!');
+            return false;
+        }
 
+        if (!customerSurname.trim()) {
+            toast.error('Soyad alanı zorunludur!');
+            return false;
+        }
 
-        // Telefon numarası girilmişse 10 haneli olmalı
         const phoneDigits = customerPhone.replace(/\D/g, '');
-        if (phoneDigits.length > 0 && phoneDigits.length !== 10) {
+        if (phoneDigits.length !== 10) {
             toast.error('Telefon numarası 10 haneli olmalıdır (5XX XXX XX XX)');
-            return;
+            return false;
         }
 
+        if (!phoneDigits.startsWith('5')) {
+            toast.error('Telefon numarası 5 ile başlamalıdır');
+            return false;
+        }
+
+        return true;
+    };
+
+    // Onay dialogunu göster
+    const handleFormSubmit = (e) => {
+        e.preventDefault();
+        if (validateForm()) {
+            setShowConfirm(true);
+        }
+    };
+
+    // Talebi gerçekten gönder
+    const handleConfirmedSubmit = async () => {
         try {
             setLoading(true);
+            setShowConfirm(false);
 
             const requestData = {
-                customerName,
-                customerSurname,
+                customerName: customerName.trim(),
+                customerSurname: customerSurname.trim(),
                 customerPhone: getCleanPhone(),
                 generalNote,
                 items: items.map(item => ({
@@ -80,10 +100,15 @@ const RequestListPage = () => {
             const response = await createRequest(requestData);
 
             if (response.data.success) {
+                // Ürün bilgilerini success sayfasına aktar
+                const orderItems = items.map(item => ({
+                    name: item.product.name,
+                    quantity: item.quantity
+                }));
                 clearList();
-                // Telefon girildiyse success sayfasına parametre gönder
-                const hasPhone = getCleanPhone() ? '?phone=true' : '';
-                navigate(`/talep-basarili/${response.data.data.requestId}${hasPhone}`);
+                navigate(`/talep-basarili/${response.data.data.requestId}`, {
+                    state: { orderItems }
+                });
             }
         } catch (error) {
             console.error('Talep gönderme hatası:', error);
@@ -220,41 +245,41 @@ const RequestListPage = () => {
                                 </p>
                             </div>
 
-                            <form onSubmit={handleSubmit} className="space-y-4">
+                            <form onSubmit={handleFormSubmit} className="space-y-4">
                                 {/* Ad Soyad - Yan yana */}
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
                                         <label className="block text-sm font-medium mb-2">
-                                            Ad <span className="text-light-500 dark:text-dark-500 font-normal">(opsiyonel)</span>
+                                            Ad <span className="text-red-500">*</span>
                                         </label>
                                         <input
                                             type="text"
                                             value={customerName}
                                             onChange={(e) => setCustomerName(e.target.value)}
                                             placeholder="Adınız"
+                                            required
                                             className="input"
                                         />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium mb-2">
-                                            Soyad <span className="text-light-500 dark:text-dark-500 font-normal">(opsiyonel)</span>
+                                            Soyad <span className="text-red-500">*</span>
                                         </label>
                                         <input
                                             type="text"
                                             value={customerSurname}
                                             onChange={(e) => setCustomerSurname(e.target.value)}
                                             placeholder="Soyadınız"
+                                            required
                                             className="input"
                                         />
                                     </div>
                                 </div>
 
-
-
                                 {/* Telefon */}
                                 <div>
                                     <label className="block text-sm font-medium mb-2">
-                                        Telefon Numarası <span className="text-light-500 dark:text-dark-500 font-normal">(opsiyonel)</span>
+                                        Telefon Numarası <span className="text-red-500">*</span>
                                     </label>
                                     <div className="flex">
                                         <span className="inline-flex items-center px-3 bg-light-200 dark:bg-dark-700 border border-r-0 border-light-300 dark:border-dark-600 rounded-l-lg text-light-600 dark:text-dark-400 text-sm">
@@ -265,14 +290,9 @@ const RequestListPage = () => {
                                             value={customerPhone}
                                             onChange={handlePhoneChange}
                                             placeholder="5XX XXX XX XX"
+                                            required
                                             className="input rounded-l-none"
                                         />
-                                    </div>
-                                    <div className="flex items-start space-x-2 mt-2 p-2 bg-blue-500/10 dark:bg-blue-500/20 rounded-lg">
-                                        <Phone className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                                        <p className="text-blue-600 dark:text-blue-400 text-xs">
-                                            Sizinle iletişime geçmemizi istiyorsanız lütfen telefonunuzu girin.
-                                        </p>
                                     </div>
                                 </div>
 
@@ -308,17 +328,85 @@ const RequestListPage = () => {
                             <div className="mt-6 p-4 bg-light-200/50 dark:bg-dark-700/50 rounded-lg">
                                 <p className="text-light-600 dark:text-dark-400 text-xs leading-relaxed">
                                     <strong className="text-light-700 dark:text-dark-300">Not:</strong> Talep gönderdikten sonra
-                                    benzersiz bir talep numarası alacaksınız. Bu numara ile WhatsApp üzerinden
-                                    fiyat ve üretim detaylarını konuşabilirsiniz.
+                                    benzersiz bir talep numarası alacaksınız. Talebiniz incelendikten sonra sizinle
+                                    iletişime geçilecektir.
                                 </p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* Onay Dialogu */}
+            {showConfirm && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-dark-800 border border-light-300 dark:border-dark-700 rounded-xl w-full max-w-md animate-fade-in">
+                        {/* Header */}
+                        <div className="flex items-center justify-between p-4 border-b border-light-300 dark:border-dark-700">
+                            <div className="flex items-center space-x-2">
+                                <AlertTriangle className="w-5 h-5 text-yellow-500" />
+                                <h3 className="font-semibold">Talebi Onaylayın</h3>
+                            </div>
+                            <button
+                                onClick={() => setShowConfirm(false)}
+                                className="text-light-500 dark:text-dark-400 hover:text-light-900 dark:hover:text-white"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-4">
+                            <p className="text-light-600 dark:text-dark-400 text-sm mb-4">
+                                Aşağıdaki ürünleri talep etmek üzeresiniz:
+                            </p>
+
+                            {/* Ürün Listesi */}
+                            <div className="bg-light-100 dark:bg-dark-700/50 rounded-lg p-3 mb-4 max-h-48 overflow-y-auto">
+                                {items.map((item, index) => (
+                                    <div
+                                        key={item.product._id}
+                                        className={`flex items-center justify-between py-2 ${index !== items.length - 1 ? 'border-b border-light-200 dark:border-dark-600' : ''}`}
+                                    >
+                                        <span className="text-sm font-medium">{item.product.name}</span>
+                                        <span className="text-sm text-light-500 dark:text-dark-400">
+                                            {item.quantity} adet
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="flex items-center justify-between text-sm font-semibold mb-4 px-1">
+                                <span>Toplam</span>
+                                <span>{items.reduce((sum, item) => sum + item.quantity, 0)} adet</span>
+                            </div>
+
+                            <p className="text-light-500 dark:text-dark-500 text-xs mb-4">
+                                Onayladıktan sonra talebiniz bize iletilecek ve sizinle iletişime geçilecektir.
+                            </p>
+                        </div>
+
+                        {/* Buttons */}
+                        <div className="flex gap-3 p-4 border-t border-light-300 dark:border-dark-700">
+                            <button
+                                onClick={() => setShowConfirm(false)}
+                                className="flex-1 btn-secondary"
+                            >
+                                Vazgeç
+                            </button>
+                            <button
+                                onClick={handleConfirmedSubmit}
+                                disabled={loading}
+                                className="flex-1 btn-primary"
+                            >
+                                {loading ? 'Gönderiliyor...' : 'Onayla ve Gönder'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
 
 export default RequestListPage;
-

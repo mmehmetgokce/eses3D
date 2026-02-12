@@ -1,20 +1,16 @@
-import { useParams, Link, useSearchParams } from 'react-router-dom';
-import { CheckCircle, Copy, MessageCircle, Home, Phone } from 'lucide-react';
+import { useParams, Link, useLocation } from 'react-router-dom';
+import { CheckCircle, Copy, Home, ShoppingBag, Camera } from 'lucide-react';
 import toast from 'react-hot-toast';
-
-const WHATSAPP_NUMBER = '905522234619';
 
 const RequestSuccessPage = () => {
     const { requestId } = useParams();
-    const [searchParams] = useSearchParams();
-    const hasPhone = searchParams.get('phone') === 'true';
+    const location = useLocation();
+    const orderItems = location.state?.orderItems || [];
 
     const copyToClipboard = () => {
         navigator.clipboard.writeText(requestId);
         toast.success('Talep numarası kopyalandı!');
     };
-
-    const whatsappLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`Merhaba, ${requestId} numaralı talebim hakkında bilgi almak istiyorum.`)}`;
 
     return (
         <div className="min-h-screen py-20 animate-fade-in">
@@ -33,11 +29,11 @@ const RequestSuccessPage = () => {
                     </h1>
 
                     <p className="text-light-600 dark:text-dark-400 mb-8">
-                        Talebiniz başarıyla oluşturuldu. Aşağıdaki talep numaranızı saklayın.
+                        Talebiniz başarıyla oluşturuldu. En kısa sürede sizinle iletişime geçeceğiz.
                     </p>
 
                     {/* Request ID Box */}
-                    <div className="card p-6 mb-8">
+                    <div className="card p-6 mb-6">
                         <p className="text-light-500 dark:text-dark-400 text-sm mb-2">Talep Numaranız</p>
                         <div className="flex items-center justify-center space-x-3">
                             <span className="text-2xl md:text-3xl font-bold text-primary-500 dark:text-primary-400">
@@ -51,61 +47,68 @@ const RequestSuccessPage = () => {
                                 <Copy className="w-5 h-5" />
                             </button>
                         </div>
+                        <p className="text-light-500 dark:text-dark-500 text-xs mt-3">
+                            Bu numarayı saklayın. Talebinizi takip etmek için kullanabilirsiniz.
+                        </p>
                     </div>
 
-                    {/* Telefon girildiyse özel mesaj */}
-                    {hasPhone && (
-                        <div className="bg-green-500/10 dark:bg-green-500/20 border border-green-500/30 rounded-xl p-6 mb-6 text-left">
-                            <div className="flex items-start space-x-3">
-                                <Phone className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                                <div>
-                                    <h3 className="font-semibold text-green-600 dark:text-green-400 mb-1">
-                                        Sizinle İletişime Geçeceğiz
-                                    </h3>
-                                    <p className="text-light-700 dark:text-dark-300 text-sm">
-                                        Girdiğiniz telefon numarasından en kısa sürede sizinle iletişime geçeceğiz.
-                                        Beklemek istemezseniz aşağıdaki WhatsApp butonunu kullanabilirsiniz.
-                                    </p>
+                    {/* Sipariş Edilen Ürünler */}
+                    {orderItems.length > 0 && (
+                        <div className="card p-6 mb-6 text-left">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center space-x-2">
+                                    <ShoppingBag className="w-5 h-5 text-primary-500" />
+                                    <h3 className="font-semibold">Talep Edilen Ürünler</h3>
                                 </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                {orderItems.map((item, index) => (
+                                    <div
+                                        key={index}
+                                        className={`flex items-center justify-between py-2 ${index !== orderItems.length - 1 ? 'border-b border-light-200 dark:border-dark-600' : ''}`}
+                                    >
+                                        <span className="text-sm">{item.name}</span>
+                                        <span className="text-sm font-medium text-primary-500 dark:text-primary-400">
+                                            {item.quantity} adet
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="flex items-center justify-between mt-3 pt-3 border-t border-light-200 dark:border-dark-600 font-semibold text-sm">
+                                <span>Toplam</span>
+                                <span className="text-primary-500 dark:text-primary-400">
+                                    {orderItems.reduce((sum, item) => sum + item.quantity, 0)} adet
+                                </span>
+                            </div>
+
+                            <div className="flex items-center space-x-2 mt-4 p-3 bg-light-100 dark:bg-dark-700/50 rounded-lg">
+                                <Camera className="w-4 h-4 text-light-500 dark:text-dark-400 flex-shrink-0" />
+                                <p className="text-light-500 dark:text-dark-400 text-xs">
+                                    Sipariş detaylarını saklamak isterseniz bu sayfanın ekran görüntüsünü alabilirsiniz.
+                                </p>
                             </div>
                         </div>
                     )}
 
-                    {/* Info */}
-                    <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-6 mb-8 text-left">
-                        <h3 className="font-semibold text-yellow-600 dark:text-yellow-400 mb-2">Sonraki Adım</h3>
+                    {/* Bilgi Kutusu */}
+                    <div className="bg-green-500/10 dark:bg-green-500/20 border border-green-500/30 rounded-xl p-6 mb-8 text-left">
+                        <h3 className="font-semibold text-green-600 dark:text-green-400 mb-2">Sonraki Adım</h3>
                         <p className="text-light-700 dark:text-dark-300 text-sm">
-                            Fiyat ve üretim detayları için lütfen WhatsApp üzerinden bizimle iletişime geçin.
-                            İletişim kurarken talep numaranızı paylaşmanız süreci hızlandıracaktır.
-                            Eğer telefon numaranızı bizimle paylaştıysanız, biz size ulaşacağız.
+                            Talebiniz incelendikten sonra fiyat ve üretim detayları hakkında sizinle iletişime geçeceğiz.
+                            Lütfen telefonunuzu açık tutun.
                         </p>
                     </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <a
-                            href={whatsappLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="btn-whatsapp flex items-center justify-center space-x-2"
-                        >
-                            <MessageCircle className="w-5 h-5" />
-                            <span>WhatsApp ile İletişime Geç</span>
-                        </a>
-
-                        <Link
-                            to="/"
-                            className="btn-secondary flex items-center justify-center space-x-2"
-                        >
-                            <Home className="w-5 h-5" />
-                            <span>Ana Sayfaya Dön</span>
-                        </Link>
-                    </div>
-
-                    {/* Additional Info */}
-                    <p className="text-light-500 dark:text-dark-500 text-xs mt-8">
-                        Talep numaranızı saklayın. Bu numara ile talebinizi takip edebilirsiniz.
-                    </p>
+                    {/* Ana Sayfa Butonu */}
+                    <Link
+                        to="/"
+                        className="btn-primary inline-flex items-center justify-center space-x-2"
+                    >
+                        <Home className="w-5 h-5" />
+                        <span>Ana Sayfaya Dön</span>
+                    </Link>
                 </div>
             </div>
         </div>
@@ -113,4 +116,3 @@ const RequestSuccessPage = () => {
 };
 
 export default RequestSuccessPage;
-

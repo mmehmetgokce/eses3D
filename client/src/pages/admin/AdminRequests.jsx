@@ -200,17 +200,15 @@ const AdminRequests = () => {
                                                 >
                                                     <Eye className="w-4 h-4" />
                                                 </button>
-                                                {request.customerPhone && (
-                                                    <a
-                                                        href={getWhatsAppLink(request)}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="p-2 bg-[#25D366]/20 hover:bg-[#25D366]/30 text-[#25D366] rounded-lg transition-colors"
-                                                        title="Müşteriye WhatsApp ile Ulaş"
-                                                    >
-                                                        <MessageCircle className="w-4 h-4" />
-                                                    </a>
-                                                )}
+                                                <a
+                                                    href={getWhatsAppLink(request)}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="p-2 bg-[#25D366]/20 hover:bg-[#25D366]/30 text-[#25D366] rounded-lg transition-colors"
+                                                    title="Müşteriye WhatsApp ile Ulaş"
+                                                >
+                                                    <MessageCircle className="w-4 h-4" />
+                                                </a>
                                                 <button
                                                     onClick={() => handleDelete(request)}
                                                     className="p-2 bg-light-200 dark:bg-dark-600 hover:bg-red-500/20 hover:text-red-500 rounded-lg transition-colors"
