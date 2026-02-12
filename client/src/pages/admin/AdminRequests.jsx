@@ -86,25 +86,28 @@ const AdminRequests = () => {
         );
     };
 
-    // Müşteriye WhatsApp mesajı (ürün detayları ile)
-    const getWhatsAppLink = (request) => {
+    // Müşteriye WhatsApp mesajı gönder (ürün detayları ile)
+    const handleWhatsApp = (request) => {
         const targetNumber = request.customerPhone || WHATSAPP_NUMBER;
+        const items = request.items || [];
 
-        // Ürün listesini oluştur
-        const itemsList = (request.items || []).map(item => {
-            const name = item.productName || (item.product && item.product.name) || 'Ürün';
-            return `• ${name} - ${item.quantity} adet`;
-        }).join('\n');
+        let message = 'Merhaba';
+        const fullName = ((request.customerName || '') + ' ' + (request.customerSurname || '')).trim();
+        if (fullName) {
+            message += ' ' + fullName;
+        }
+        message += ', ' + request.requestId + ' numaralı talebiniz hakkında bilgi vermek istiyoruz.';
 
-        const lines = [
-            `Merhaba ${request.customerName || ''} ${request.customerSurname || ''}, ${request.requestId} numaralı talebiniz hakkında bilgi vermek istiyoruz.`,
-            '',
-            'Talep ettiğiniz ürünler:',
-            itemsList
-        ];
+        if (items.length > 0) {
+            message += '\n\nTalep ettiğiniz ürünler:';
+            items.forEach(function (item) {
+                const name = item.productName || (item.product && item.product.name) || 'Ürün';
+                message += '\n• ' + name + ' - ' + item.quantity + ' adet';
+            });
+        }
 
-        const message = lines.join('\n');
-        return `https://wa.me/${targetNumber}?text=${encodeURIComponent(message)}`;
+        const url = 'https://wa.me/' + targetNumber + '?text=' + encodeURIComponent(message);
+        window.open(url, '_blank');
     };
 
     // Müşteri adını formatla
@@ -209,15 +212,13 @@ const AdminRequests = () => {
                                                 >
                                                     <Eye className="w-4 h-4" />
                                                 </button>
-                                                <a
-                                                    href={getWhatsAppLink(request)}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
+                                                <button
+                                                    onClick={() => handleWhatsApp(request)}
                                                     className="p-2 bg-[#25D366]/20 hover:bg-[#25D366]/30 text-[#25D366] rounded-lg transition-colors"
                                                     title="Müşteriye WhatsApp ile Ulaş"
                                                 >
                                                     <MessageCircle className="w-4 h-4" />
-                                                </a>
+                                                </button>
                                                 <button
                                                     onClick={() => handleDelete(request)}
                                                     className="p-2 bg-light-200 dark:bg-dark-600 hover:bg-red-500/20 hover:text-red-500 rounded-lg transition-colors"
