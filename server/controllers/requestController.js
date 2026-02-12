@@ -1,12 +1,11 @@
 import Request from '../models/Request.js';
-import { sendRequestEmail } from '../utils/emailService.js';
 
 // @desc    Yeni talep oluştur
 // @route   POST /api/requests
 // @access  Public
 export const createRequest = async (req, res) => {
     try {
-        const { email, customerName, customerSurname, customerPhone, items, generalNote } = req.body;
+        const { customerName, customerSurname, customerPhone, items, generalNote } = req.body;
 
         if (!items || items.length === 0) {
             return res.status(400).json({
@@ -20,7 +19,6 @@ export const createRequest = async (req, res) => {
 
         const request = await Request.create({
             requestId,
-            email,
             customerName: customerName || '',
             customerSurname: customerSurname || '',
             customerPhone: customerPhone || '',
@@ -28,19 +26,10 @@ export const createRequest = async (req, res) => {
             generalNote
         });
 
-        // E-posta gönder
-        try {
-            await sendRequestEmail(email, requestId, items, generalNote);
-        } catch (emailError) {
-            console.error('E-posta gönderme hatası:', emailError);
-            // E-posta hatası olsa bile talep oluşturuldu
-        }
-
         res.status(201).json({
             success: true,
             data: {
                 requestId: request.requestId,
-                email: request.email,
                 itemCount: request.items.length
             },
             message: 'Talebiniz başarıyla oluşturuldu!'

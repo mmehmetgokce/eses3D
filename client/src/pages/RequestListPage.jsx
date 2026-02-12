@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 const RequestListPage = () => {
     const navigate = useNavigate();
     const { items, removeItem, updateQuantity, updateNote, clearList } = useRequest();
-    const [email, setEmail] = useState('');
+
     const [customerName, setCustomerName] = useState('');
     const [customerSurname, setCustomerSurname] = useState('');
     const [customerPhone, setCustomerPhone] = useState('');
@@ -52,10 +52,7 @@ const RequestListPage = () => {
             return;
         }
 
-        if (!email) {
-            toast.error('E-posta adresi gereklidir!');
-            return;
-        }
+
 
         // Telefon numarası girilmişse 10 haneli olmalı
         const phoneDigits = customerPhone.replace(/\D/g, '');
@@ -68,7 +65,6 @@ const RequestListPage = () => {
             setLoading(true);
 
             const requestData = {
-                email,
                 customerName,
                 customerSurname,
                 customerPhone: getCleanPhone(),
@@ -253,22 +249,7 @@ const RequestListPage = () => {
                                     </div>
                                 </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium mb-2">
-                                        E-posta Adresi *
-                                    </label>
-                                    <input
-                                        type="email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="ornek@email.com"
-                                        required
-                                        className="input"
-                                    />
-                                    <p className="text-light-500 dark:text-dark-500 text-xs mt-1">
-                                        Talep numaranız bu adrese gönderilecek.
-                                    </p>
-                                </div>
+
 
                                 {/* Telefon */}
                                 <div>

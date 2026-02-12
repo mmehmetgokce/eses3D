@@ -98,7 +98,7 @@ const AdminDashboard = () => {
                             <div key={request._id} className="p-4 flex items-center justify-between">
                                 <div>
                                     <p className="font-medium text-primary-400">{request.requestId}</p>
-                                    <p className="text-dark-400 text-sm">{request.email}</p>
+                                    <p className="text-dark-400 text-sm">{new Date(request.createdAt).toLocaleDateString('tr-TR')}</p>
                                 </div>
                                 <div className="text-right">
                                     <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${request.status === 'pending'

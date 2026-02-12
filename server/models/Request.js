@@ -27,12 +27,6 @@ const requestSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
-    email: {
-        type: String,
-        required: [true, 'E-posta adresi zorunludur'],
-        trim: true,
-        lowercase: true
-    },
     customerName: {
         type: String,
         default: '',

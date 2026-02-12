@@ -33,7 +33,7 @@ const RequestSuccessPage = () => {
                     </h1>
 
                     <p className="text-light-600 dark:text-dark-400 mb-8">
-                        Talebiniz başarıyla oluşturuldu. E-posta adresinize talep detayları gönderildi.
+                        Talebiniz başarıyla oluşturuldu. Aşağıdaki talep numaranızı saklayın.
                     </p>
 
                     {/* Request ID Box */}

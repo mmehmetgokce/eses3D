@@ -93,7 +93,7 @@ const AdminRequests = () => {
 
         const message = isCustomer
             ? `Merhaba ${request.customerName || ''} ${request.customerSurname || ''}, ${request.requestId} numaralı talebiniz hakkında bilgi vermek istiyoruz.`
-            : `Merhaba, ${request.requestId} numaralı talep hakkında:\n\nMüşteri: ${request.email}\nÜrün Sayısı: ${request.items?.length || 0}`;
+            : `Merhaba, ${request.requestId} numaralı talep hakkında:\n\nÜrün Sayısı: ${request.items?.length || 0}`;
 
         return `https://wa.me/${targetNumber}?text=${encodeURIComponent(message)}`;
     };
@@ -175,9 +175,8 @@ const AdminRequests = () => {
                                         </td>
                                         <td className="p-4">
                                             <div>
-                                                <p className="text-sm">{request.email}</p>
                                                 {getCustomerName(request) && (
-                                                    <p className="text-xs text-light-500 dark:text-dark-400">{getCustomerName(request)}</p>
+                                                    <p className="text-sm">{getCustomerName(request)}</p>
                                                 )}
                                                 {request.customerPhone && (
                                                     <p className="text-xs text-green-600 dark:text-green-400 flex items-center space-x-1">
@@ -246,8 +245,8 @@ const AdminRequests = () => {
                             {/* Customer Info */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <p className="text-light-500 dark:text-dark-400 text-sm">E-posta</p>
-                                    <p className="font-medium">{selectedRequest.email}</p>
+                                    <p className="text-light-500 dark:text-dark-400 text-sm">Müşteri</p>
+                                    <p className="font-medium">{getCustomerName(selectedRequest) || 'Belirtilmemiş'}</p>
                                 </div>
                                 <div>
                                     <p className="text-light-500 dark:text-dark-400 text-sm">Tarih</p>
