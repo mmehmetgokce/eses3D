@@ -31,7 +31,7 @@ const Header = () => {
                     </div>
 
                     {/* Desktop Navigation - Orta */}
-                    <nav className="hidden md:flex items-center justify-center space-x-8">
+                    <nav className="hidden md:flex flex-1 items-center justify-center space-x-8">
                         {navLinks.map((link) => (
                             <NavLink
                                 key={link.to}

@@ -91,12 +91,19 @@ const AdminRequests = () => {
         const targetNumber = request.customerPhone || WHATSAPP_NUMBER;
 
         // Ürün listesini oluştur
-        const itemsList = request.items?.map(item =>
-            `• ${item.productName || item.product?.name || 'Ürün'} - ${item.quantity} adet`
-        ).join('\n') || '';
+        const itemsList = (request.items || []).map(item => {
+            const name = item.productName || (item.product && item.product.name) || 'Ürün';
+            return `• ${name} - ${item.quantity} adet`;
+        }).join('\n');
 
-        const message = `Merhaba ${request.customerName || ''} ${request.customerSurname || ''}, ${request.requestId} numaralı talebiniz hakkında bilgi vermek istiyoruz.\n\nTalep ettiğiniz ürünler:\n${itemsList}`;
+        const lines = [
+            `Merhaba ${request.customerName || ''} ${request.customerSurname || ''}, ${request.requestId} numaralı talebiniz hakkında bilgi vermek istiyoruz.`,
+            '',
+            'Talep ettiğiniz ürünler:',
+            itemsList
+        ];
 
+        const message = lines.join('\n');
         return `https://wa.me/${targetNumber}?text=${encodeURIComponent(message)}`;
     };
 
