@@ -88,6 +88,7 @@ const AdminRequests = () => {
 
     // Müşteriye WhatsApp mesajı gönder (ürün detayları ile)
     const handleWhatsApp = (request) => {
+        alert('DEBUG: items=' + JSON.stringify(request.items));
         const targetNumber = request.customerPhone || WHATSAPP_NUMBER;
         const items = request.items || [];
 
