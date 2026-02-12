@@ -97,7 +97,6 @@ const RequestSuccessPage = () => {
                         <h3 className="font-semibold text-green-600 dark:text-green-400 mb-2">Sonraki Adım</h3>
                         <p className="text-light-700 dark:text-dark-300 text-sm">
                             Talebiniz incelendikten sonra fiyat ve üretim detayları hakkında sizinle iletişime geçeceğiz.
-                            Lütfen telefonunuzu açık tutun.
                         </p>
                     </div>
 
