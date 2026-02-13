@@ -22,7 +22,7 @@ const ProductCard = ({ product }) => {
 
     return (
         <Link
-            to={`/ urunler / ${product._id} `}
+            to={`/urunler/${product._id}`}
             className="card card-hover group"
         >
             {/* Image */}
@@ -43,10 +43,10 @@ const ProductCard = ({ product }) => {
                 {/* Add to List Button */}
                 <button
                     onClick={handleAddToList}
-                    className={`absolute bottom - 3 right - 3 p - 3 rounded - full transition - all duration - 300 ${inList
+                    className={`absolute bottom-3 right-3 p-3 rounded-full transition-all duration-300 ${inList
                         ? 'bg-green-500 text-white cursor-default'
                         : 'bg-primary-500 text-white hover:bg-primary-400 hover:scale-110'
-                        } `}
+                        }`}
                 >
                     {inList ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
                 </button>

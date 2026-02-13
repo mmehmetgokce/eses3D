@@ -259,9 +259,9 @@ const AdminProducts = () => {
 
             {/* Modal */}
             {showModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-                    <div className="bg-white dark:bg-dark-800 border border-light-300 dark:border-dark-700 rounded-xl w-full max-w-2xl my-8 animate-fade-in shadow-xl">
-                        <div className="flex items-center justify-between p-4 border-b border-light-300 dark:border-dark-700">
+                <div className="fixed inset-0 bg-black/50 flex items-start justify-center z-50 p-4 overflow-y-auto">
+                    <div className="bg-white dark:bg-dark-800 border border-light-300 dark:border-dark-700 rounded-xl w-full max-w-2xl my-8 animate-fade-in shadow-xl flex flex-col max-h-[calc(100vh-4rem)]">
+                        <div className="flex items-center justify-between p-4 border-b border-light-300 dark:border-dark-700 flex-shrink-0">
                             <h2 className="font-semibold text-light-900 dark:text-white">
                                 {editingProduct ? 'Ürün Düzenle' : 'Yeni Ürün'}
                             </h2>
@@ -270,7 +270,7 @@ const AdminProducts = () => {
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+                        <form onSubmit={handleSubmit} className="p-4 space-y-4 overflow-y-auto flex-1">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium mb-2 text-light-800 dark:text-white">Ürün Adı *</label>
@@ -392,10 +392,10 @@ const AdminProducts = () => {
                                                             }
                                                         }}
                                                         className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium transition-all border ${tempColors.includes(color.name)
-                                                                ? 'border-primary-500 bg-primary-500/10 text-primary-600 dark:text-primary-400'
-                                                                : tempColors.length >= formData.colorCount
-                                                                    ? 'border-light-200 dark:border-dark-600 text-light-400 dark:text-dark-600 cursor-not-allowed'
-                                                                    : 'border-light-300 dark:border-dark-600 text-light-700 dark:text-dark-300 hover:border-primary-400'
+                                                            ? 'border-primary-500 bg-primary-500/10 text-primary-600 dark:text-primary-400'
+                                                            : tempColors.length >= formData.colorCount
+                                                                ? 'border-light-200 dark:border-dark-600 text-light-400 dark:text-dark-600 cursor-not-allowed'
+                                                                : 'border-light-300 dark:border-dark-600 text-light-700 dark:text-dark-300 hover:border-primary-400'
                                                             }`}
                                                         disabled={!tempColors.includes(color.name) && tempColors.length >= formData.colorCount}
                                                     >
