@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import { Toaster } from 'react-hot-toast';
 import { RequestProvider } from './context/RequestContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -26,61 +27,63 @@ import ProtectedRoute from './components/admin/ProtectedRoute';
 function App() {
     return (
         <ThemeProvider>
-            <RequestProvider>
-                <Router>
-                    <Toaster
-                        position="top-right"
-                        toastOptions={{
-                            duration: 3000,
-                            className: 'dark:bg-dark-800 dark:text-white dark:border-dark-700',
-                            style: {
-                                background: '#fff',
-                                color: '#171717',
-                                border: '1px solid #e5e5e5'
-                            },
-                            success: {
-                                iconTheme: {
-                                    primary: '#10b981',
-                                    secondary: '#fff'
+            <HelmetProvider>
+                <RequestProvider>
+                    <Router>
+                        <Toaster
+                            position="top-right"
+                            toastOptions={{
+                                duration: 3000,
+                                className: 'dark:bg-dark-800 dark:text-white dark:border-dark-700',
+                                style: {
+                                    background: '#fff',
+                                    color: '#171717',
+                                    border: '1px solid #e5e5e5'
+                                },
+                                success: {
+                                    iconTheme: {
+                                        primary: '#10b981',
+                                        secondary: '#fff'
+                                    }
+                                },
+                                error: {
+                                    iconTheme: {
+                                        primary: '#ef4444',
+                                        secondary: '#fff'
+                                    }
                                 }
-                            },
-                            error: {
-                                iconTheme: {
-                                    primary: '#ef4444',
-                                    secondary: '#fff'
-                                }
-                            }
-                        }}
-                    />
-                    <Routes>
-                        {/* Public Routes */}
-                        <Route path="/" element={<Layout />}>
-                            <Route index element={<HomePage />} />
-                            <Route path="urunler" element={<ProductsPage />} />
-                            <Route path="urunler/:id" element={<ProductDetailPage />} />
-                            <Route path="talep-listem" element={<RequestListPage />} />
-                            <Route path="talep-basarili/:requestId" element={<RequestSuccessPage />} />
-                            <Route path="ozel-tasarim" element={<CustomDesignPage />} />
-                        </Route>
+                            }}
+                        />
+                        <Routes>
+                            {/* Public Routes */}
+                            <Route path="/" element={<Layout />}>
+                                <Route index element={<HomePage />} />
+                                <Route path="urunler" element={<ProductsPage />} />
+                                <Route path="urunler/:id" element={<ProductDetailPage />} />
+                                <Route path="talep-listem" element={<RequestListPage />} />
+                                <Route path="talep-basarili/:requestId" element={<RequestSuccessPage />} />
+                                <Route path="ozel-tasarim" element={<CustomDesignPage />} />
+                            </Route>
 
-                        {/* Admin Routes */}
-                        <Route path="/admin/login" element={<AdminLogin />} />
-                        <Route
-                            path="/admin"
-                            element={
-                                <ProtectedRoute>
-                                    <AdminLayout />
-                                </ProtectedRoute>
-                            }
-                        >
-                            <Route index element={<AdminDashboard />} />
-                            <Route path="urunler" element={<AdminProducts />} />
-                            <Route path="kategoriler" element={<AdminCategories />} />
-                            <Route path="talepler" element={<AdminRequests />} />
-                        </Route>
-                    </Routes>
-                </Router>
-            </RequestProvider>
+                            {/* Admin Routes */}
+                            <Route path="/admin/login" element={<AdminLogin />} />
+                            <Route
+                                path="/admin"
+                                element={
+                                    <ProtectedRoute>
+                                        <AdminLayout />
+                                    </ProtectedRoute>
+                                }
+                            >
+                                <Route index element={<AdminDashboard />} />
+                                <Route path="urunler" element={<AdminProducts />} />
+                                <Route path="kategoriler" element={<AdminCategories />} />
+                                <Route path="talepler" element={<AdminRequests />} />
+                            </Route>
+                        </Routes>
+                    </Router>
+                </RequestProvider>
+            </HelmetProvider>
         </ThemeProvider>
     );
 }

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Package, Palette, MessageCircle, Zap } from 'lucide-react';
+import SEO from '../components/SEO';
 
 const WHATSAPP_NUMBER = '905522234619';
 
@@ -31,6 +32,11 @@ const HomePage = () => {
 
     return (
         <div className="animate-fade-in">
+            <SEO
+                title="Ana Sayfa"
+                description="eses3D - 3D yazıcı ile üretilmiş anahtarlık, figür, dekoratif ürünler. Beğendiğiniz ürünleri talep listesine ekleyin, biz sizinle iletişime geçelim."
+                path="/"
+            />
             {/* Hero Section */}
             <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
                 {/* Background Gradient - Tema uyumlu */}

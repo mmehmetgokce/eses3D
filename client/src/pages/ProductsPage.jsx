@@ -3,6 +3,8 @@ import { useSearchParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import Loading from '../components/Loading';
 import { getProducts, getCategories } from '../services/api';
+import SEO from '../components/SEO';
+
 
 const ProductsPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -56,6 +58,11 @@ const ProductsPage = () => {
 
     return (
         <div className="min-h-screen py-8 animate-fade-in">
+            <SEO
+                title="Ürünler"
+                description="eses3D 3D baskı ürünleri kataloğu. Anahtarlık, figür, dekoratif ürünler ve daha fazlası. Kategorilere göre filtreleyin ve beğendiğiniz ürünleri talep listesine ekleyin."
+                path="/urunler"
+            />
             <div className="container mx-auto px-4">
                 {/* Header */}
                 <div className="mb-8">

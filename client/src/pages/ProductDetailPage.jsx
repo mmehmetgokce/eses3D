@@ -4,6 +4,7 @@ import { ArrowLeft, Plus, Check, ChevronLeft, ChevronRight, MessageCircle } from
 import Loading from '../components/Loading';
 import { getProductById } from '../services/api';
 import { useRequest } from '../context/RequestContext';
+import SEO from '../components/SEO';
 import toast from 'react-hot-toast';
 
 const WHATSAPP_NUMBER = '905522234619';
@@ -75,6 +76,11 @@ const ProductDetailPage = () => {
 
     return (
         <div className="min-h-screen py-8 animate-fade-in">
+            <SEO
+                title={product.name}
+                description={product.description || `${product.name} - eses3D 3D baskı ürünü. Detayları inceleyin ve talep listesine ekleyin.`}
+                path={`/urunler/${product._id}`}
+            />
             <div className="container mx-auto px-4">
                 {/* Back Button */}
                 <Link

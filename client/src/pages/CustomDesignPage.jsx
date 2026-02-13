@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { MessageCircle, Upload, FileCode, AlertCircle, ArrowRight, Camera, HelpCircle } from 'lucide-react';
+import SEO from '../components/SEO';
 
 const WHATSAPP_NUMBER = '905522234619';
 
@@ -27,6 +28,11 @@ const CustomDesignPage = () => {
 
     return (
         <div className="min-h-screen py-8 animate-fade-in">
+            <SEO
+                title="Özel Tasarım ve İstekler"
+                description="Kendi STL dosyanızı gönderin veya bir yerde gördüğünüz bir ürünü sorun. 3D baskı ile özel tasarım üretimi."
+                path="/ozel-tasarim"
+            />
             <div className="container mx-auto px-4">
                 {/* Header */}
                 <div className="text-center max-w-2xl mx-auto mb-12">
