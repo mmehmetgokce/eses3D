@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Eye, Trash2, X, Phone, User, MessageCircle } from 'lucide-react';
+import { Eye, Trash2, X, Phone, User, MessageCircle, ChevronDown } from 'lucide-react';
 import ColorCircle from '../../components/ColorCircle';
 import { getAllRequests, updateRequestStatus, deleteRequest } from '../../services/api';
 import Loading from '../../components/Loading';
@@ -81,7 +81,7 @@ const AdminRequests = () => {
             cancelled: 'İptal'
         };
         return (
-            <span className={`px - 3 py - 1 rounded - full text - xs font - medium ${classes[status] || 'bg-light-200 dark:bg-dark-600 text-light-500 dark:text-dark-400'} `}>
+            <span className={`px-3 py-1 rounded-full text-xs font-medium ${classes[status] || 'bg-light-200 dark:bg-dark-600 text-light-500 dark:text-dark-400'}`}>
                 {labels[status] || status}
             </span>
         );

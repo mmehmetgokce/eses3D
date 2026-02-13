@@ -260,7 +260,7 @@ const AdminProducts = () => {
             {/* Modal */}
             {showModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-start justify-center z-50 p-4 overflow-y-auto">
-                    <div className="bg-white dark:bg-dark-800 border border-light-300 dark:border-dark-700 rounded-xl w-full max-w-2xl my-8 animate-fade-in shadow-xl flex flex-col max-h-[calc(100vh-4rem)]">
+                    <div className="bg-white dark:bg-dark-800 border border-light-300 dark:border-dark-700 rounded-xl w-full max-w-2xl my-8 animate-fade-in shadow-xl flex flex-col" style={{ maxHeight: 'calc(100vh - 4rem)' }}>
                         <div className="flex items-center justify-between p-4 border-b border-light-300 dark:border-dark-700 flex-shrink-0">
                             <h2 className="font-semibold text-light-900 dark:text-white">
                                 {editingProduct ? 'Ürün Düzenle' : 'Yeni Ürün'}
@@ -270,7 +270,7 @@ const AdminProducts = () => {
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-4 space-y-4 overflow-y-auto flex-1">
+                        <form onSubmit={handleSubmit} className="p-4 space-y-4 overflow-y-auto flex-1" style={{ minHeight: 0 }}>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium mb-2 text-light-800 dark:text-white">Ürün Adı *</label>

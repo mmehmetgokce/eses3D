@@ -18,7 +18,17 @@ const ProductDetailPage = () => {
     const [selectedColorIndex, setSelectedColorIndex] = useState(-1);
     const { addItem, isInList } = useRequest();
 
-    const inList = product ? isInList(product._id) : false;
+    // Seçili renk kombinasyonu ile listede mi kontrol et
+    const getSelectedColors = () => {
+        if (!product) return [];
+        const hasColors = product.colorCombinations?.length > 0;
+        return hasColors && selectedColorIndex >= 0
+            ? product.colorCombinations[selectedColorIndex].colors
+            : [];
+    };
+
+    const currentColors = getSelectedColors();
+    const inList = product ? isInList(product._id, currentColors) : false;
 
     useEffect(() => {
         fetchProduct();
@@ -37,18 +47,25 @@ const ProductDetailPage = () => {
     };
 
     const handleAddToList = () => {
-        if (!inList && product) {
+        if (product) {
             const hasColors = product.colorCombinations?.length > 0;
-            const selectedColors = hasColors && selectedColorIndex >= 0
-                ? product.colorCombinations[selectedColorIndex].colors
-                : [];
 
             if (hasColors && selectedColorIndex < 0) {
                 toast.error('Lütfen bir renk seçimi yapın!');
                 return;
             }
-            addItem(product, 1, '', selectedColors);
-            toast.success(`"${product.name}" talep listesine eklendi!`);
+
+            if (inList) {
+                toast('Bu renk zaten listenizde!', { icon: '⚠️' });
+                return;
+            }
+
+            addItem(product, 1, '', currentColors);
+            const colorText = currentColors.length > 0 ? ` (${currentColors.join('-')})` : '';
+            toast.success(`"${product.name}"${colorText} talep listesine eklendi!`);
+
+            // Renk seçimini sıfırla, başka renk ekleyebilsin
+            setSelectedColorIndex(-1);
         }
     };
 

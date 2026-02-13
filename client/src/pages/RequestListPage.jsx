@@ -156,7 +156,7 @@ const RequestListPage = () => {
                     {/* Items List */}
                     <div className="lg:col-span-2 space-y-4">
                         {items.map((item) => (
-                            <div key={item.product._id} className="card p-4">
+                            <div key={item._itemKey} className="card p-4">
                                 <div className="flex flex-col sm:flex-row gap-4">
                                     {/* Image */}
                                     <div className="w-full sm:w-24 h-32 sm:h-24 flex-shrink-0">
@@ -177,7 +177,7 @@ const RequestListPage = () => {
                                                 {item.product.name}
                                             </Link>
                                             <button
-                                                onClick={() => removeItem(item.product._id)}
+                                                onClick={() => removeItem(item._itemKey)}
                                                 className="text-light-500 dark:text-dark-500 hover:text-red-500 transition-colors"
                                             >
                                                 <Trash2 className="w-5 h-5" />
@@ -208,7 +208,7 @@ const RequestListPage = () => {
                                                 <span className="text-light-500 dark:text-dark-400 text-sm">Adet:</span>
                                                 <div className="flex items-center space-x-2">
                                                     <button
-                                                        onClick={() => updateQuantity(item.product._id, item.quantity - 1)}
+                                                        onClick={() => updateQuantity(item._itemKey, item.quantity - 1)}
                                                         disabled={item.quantity <= 1}
                                                         className="p-1 bg-light-200 dark:bg-dark-700 rounded hover:bg-light-300 dark:hover:bg-dark-600 disabled:opacity-50 disabled:cursor-not-allowed"
                                                     >
@@ -216,7 +216,7 @@ const RequestListPage = () => {
                                                     </button>
                                                     <span className="w-8 text-center font-medium">{item.quantity}</span>
                                                     <button
-                                                        onClick={() => updateQuantity(item.product._id, item.quantity + 1)}
+                                                        onClick={() => updateQuantity(item._itemKey, item.quantity + 1)}
                                                         className="p-1 bg-light-200 dark:bg-dark-700 rounded hover:bg-light-300 dark:hover:bg-dark-600"
                                                     >
                                                         <Plus className="w-4 h-4" />
@@ -244,7 +244,7 @@ const RequestListPage = () => {
                                             type="text"
                                             placeholder="Ürüne özel not ekleyin (opsiyonel)"
                                             value={item.note}
-                                            onChange={(e) => updateNote(item.product._id, e.target.value)}
+                                            onChange={(e) => updateNote(item._itemKey, e.target.value)}
                                             className="input text-sm"
                                         />
                                     </div>
@@ -414,7 +414,7 @@ const RequestListPage = () => {
                             <div className="bg-light-100 dark:bg-dark-700/50 rounded-lg p-3 mb-4 max-h-48 overflow-y-auto">
                                 {items.map((item, index) => (
                                     <div
-                                        key={item.product._id}
+                                        key={item._itemKey}
                                         className={`flex items-center justify-between py-2 ${index !== items.length - 1 ? 'border-b border-light-200 dark:border-dark-600' : ''}`}
                                     >
                                         <div>
