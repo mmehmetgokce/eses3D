@@ -1,5 +1,6 @@
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { CheckCircle, Copy, Home, ShoppingBag, Camera } from 'lucide-react';
+import ColorCircle from '../components/ColorCircle';
 import toast from 'react-hot-toast';
 
 const RequestSuccessPage = () => {
@@ -73,6 +74,14 @@ const RequestSuccessPage = () => {
                                             <span className="text-sm font-medium text-primary-500 dark:text-primary-400">
                                                 {item.quantity} adet
                                             </span>
+                                            {item.selectedColors?.length > 0 && (
+                                                <div className="flex items-center gap-1 justify-end mt-0.5">
+                                                    <ColorCircle colors={item.selectedColors} size={14} />
+                                                    <span className="text-xs text-light-500 dark:text-dark-500">
+                                                        {item.selectedColors.join('-')}
+                                                    </span>
+                                                </div>
+                                            )}
                                             {item.price != null && (
                                                 <p className="text-xs text-light-500 dark:text-dark-500">
                                                     {(item.price * item.quantity).toLocaleString('tr-TR')} ₺

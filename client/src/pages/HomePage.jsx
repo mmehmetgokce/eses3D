@@ -147,11 +147,11 @@ const HomePage = () => {
                 <div className="container mx-auto px-4">
                     <div className="max-w-3xl mx-auto text-center">
                         <h3 className="text-xl font-semibold mb-4 text-light-800 dark:text-dark-200">
-                            Fiyat Bilgisi
+                            Fiyat ve Teslimat
                         </h3>
                         <p className="text-light-600 dark:text-dark-400 text-sm leading-relaxed">
-                            Fiyat bilgileri sitede sabit olarak yer almaz. Fiyat; ölçü, malzeme ve talebe göre
-                            değişir.
+                            Ürün fiyatları sayfalarında belirtilmiştir. Fiyatlar; ölçü, malzeme ve talep edilen adete göre
+                            değişiklik gösterebilir. Detaylı bilgi için iletişime geçebilirsiniz.
                         </p>
                     </div>
                 </div>

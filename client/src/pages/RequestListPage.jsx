@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, X, AlertTriangle } from 'lucide-react';
 import { useRequest } from '../context/RequestContext';
+import ColorCircle from '../components/ColorCircle';
 import { createRequest } from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -94,6 +95,7 @@ const RequestListPage = () => {
                     productName: item.product.name,
                     quantity: item.quantity,
                     unitPrice: item.product.price || null,
+                    selectedColors: item.selectedColors || [],
                     note: item.note
                 }))
             };
@@ -105,7 +107,8 @@ const RequestListPage = () => {
                 const orderItems = items.map(item => ({
                     name: item.product.name,
                     quantity: item.quantity,
-                    price: item.product.price || null
+                    price: item.product.price || null,
+                    selectedColors: item.selectedColors || []
                 }));
                 clearList();
                 navigate(`/talep-basarili/${response.data.data.requestId}`, {
@@ -185,6 +188,17 @@ const RequestListPage = () => {
                                             <p className="text-light-500 dark:text-dark-500 text-sm mb-3">
                                                 Standart Boyut: {item.product.standardSize}
                                             </p>
+                                        )}
+
+                                        {/* Seçilen Renk */}
+                                        {item.selectedColors?.length > 0 && (
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <span className="text-light-500 dark:text-dark-400 text-sm">Renk:</span>
+                                                <ColorCircle colors={item.selectedColors} size={22} />
+                                                <span className="text-sm text-light-600 dark:text-dark-300">
+                                                    {item.selectedColors.join(' - ')}
+                                                </span>
+                                            </div>
                                         )}
 
                                         {/* Fiyat ve Quantity yan yana */}
@@ -403,7 +417,15 @@ const RequestListPage = () => {
                                         key={item.product._id}
                                         className={`flex items-center justify-between py-2 ${index !== items.length - 1 ? 'border-b border-light-200 dark:border-dark-600' : ''}`}
                                     >
-                                        <span className="text-sm font-medium">{item.product.name}</span>
+                                        <div>
+                                            <span className="text-sm font-medium">{item.product.name}</span>
+                                            {item.selectedColors?.length > 0 && (
+                                                <div className="flex items-center gap-1 mt-0.5">
+                                                    <ColorCircle colors={item.selectedColors} size={14} />
+                                                    <span className="text-xs text-light-500 dark:text-dark-500">{item.selectedColors.join('-')}</span>
+                                                </div>
+                                            )}
+                                        </div>
                                         <div className="text-right">
                                             <span className="text-sm text-light-500 dark:text-dark-400">
                                                 {item.quantity} adet

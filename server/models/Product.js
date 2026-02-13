@@ -28,6 +28,15 @@ const productSchema = new mongoose.Schema({
         default: null,
         min: 0
     },
+    colorCount: {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 4
+    },
+    colorCombinations: [{
+        colors: [String]
+    }],
     isActive: {
         type: Boolean,
         default: true

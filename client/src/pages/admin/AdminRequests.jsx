@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Eye, Trash2, MessageCircle, X, ChevronDown, Phone, User } from 'lucide-react';
+import { Eye, Trash2, X, Phone, User, MessageCircle } from 'lucide-react';
+import ColorCircle from '../../components/ColorCircle';
 import { getAllRequests, updateRequestStatus, deleteRequest } from '../../services/api';
 import Loading from '../../components/Loading';
 import toast from 'react-hot-toast';
@@ -44,7 +45,7 @@ const AdminRequests = () => {
     };
 
     const handleDelete = async (request) => {
-        if (!confirm(`${request.requestId} numaralı talebi silmek istediğinize emin misiniz?`)) {
+        if (!confirm(`${request.requestId} numaralı talebi silmek istediğinize emin misiniz ? `)) {
             return;
         }
 
@@ -80,7 +81,7 @@ const AdminRequests = () => {
             cancelled: 'İptal'
         };
         return (
-            <span className={`px-3 py-1 rounded-full text-xs font-medium ${classes[status] || 'bg-light-200 dark:bg-dark-600 text-light-500 dark:text-dark-400'}`}>
+            <span className={`px - 3 py - 1 rounded - full text - xs font - medium ${classes[status] || 'bg-light-200 dark:bg-dark-600 text-light-500 dark:text-dark-400'} `}>
                 {labels[status] || status}
             </span>
         );
@@ -105,6 +106,9 @@ const AdminRequests = () => {
             items.forEach(function (item) {
                 const name = item.productName || (item.product && item.product.name) || 'Ürün';
                 let line = '\n• ' + name + ' - ' + item.quantity + ' adet';
+                if (item.selectedColors && item.selectedColors.length > 0) {
+                    line += ' (Renk: ' + item.selectedColors.join('-') + ')';
+                }
                 if (item.unitPrice != null) {
                     line += ' (' + (item.unitPrice * item.quantity) + ' ₺)';
                     totalPrice += item.unitPrice * item.quantity;
@@ -124,7 +128,7 @@ const AdminRequests = () => {
     // Müşteri adını formatla
     const getCustomerName = (request) => {
         if (request.customerName || request.customerSurname) {
-            return `${request.customerName || ''} ${request.customerSurname || ''}`.trim();
+            return `${request.customerName || ''} ${request.customerSurname || ''} `.trim();
         }
         return null;
     };
@@ -135,7 +139,7 @@ const AdminRequests = () => {
         const clean = phone.replace(/\D/g, '');
         if (clean.length === 12 && clean.startsWith('90')) {
             const number = clean.slice(2);
-            return `+90 ${number.slice(0, 3)} ${number.slice(3, 6)} ${number.slice(6, 8)} ${number.slice(8)}`;
+            return `+ 90 ${number.slice(0, 3)} ${number.slice(3, 6)} ${number.slice(6, 8)} ${number.slice(8)} `;
         }
         return phone;
     };
@@ -288,7 +292,7 @@ const AdminRequests = () => {
                                     <Phone className="w-4 h-4 text-light-500 dark:text-dark-400" />
                                     <div>
                                         <p className="text-light-500 dark:text-dark-400 text-xs">Telefon</p>
-                                        <p className={`font-medium ${selectedRequest.customerPhone ? 'text-green-600 dark:text-green-400' : 'text-light-500 dark:text-dark-500'}`}>
+                                        <p className={`font - medium ${selectedRequest.customerPhone ? 'text-green-600 dark:text-green-400' : 'text-light-500 dark:text-dark-500'} `}>
                                             {formatPhoneDisplay(selectedRequest.customerPhone) || 'Belirtilmemiş'}
                                         </p>
                                     </div>
@@ -303,10 +307,10 @@ const AdminRequests = () => {
                                         <button
                                             key={opt.value}
                                             onClick={() => handleStatusChange(selectedRequest._id, opt.value)}
-                                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${selectedRequest.status === opt.value
+                                            className={`px - 4 py - 2 rounded - lg text - sm font - medium transition - all ${selectedRequest.status === opt.value
                                                 ? 'bg-primary-500 text-white'
                                                 : 'bg-light-200 dark:bg-dark-700 text-light-700 dark:text-dark-300 hover:bg-light-300 dark:hover:bg-dark-600'
-                                                }`}
+                                                } `}
                                         >
                                             {opt.label}
                                         </button>
@@ -333,10 +337,41 @@ const AdminRequests = () => {
                                                 {item.note && (
                                                     <p className="text-light-500 dark:text-dark-500 text-xs">Not: {item.note}</p>
                                                 )}
+                                                {item.selectedColors?.length > 0 && (
+                                                    <div className="flex items-center gap-1.5 mt-1">
+                                                        <ColorCircle colors={item.selectedColors} size={16} />
+                                                        <span className="text-xs text-light-500 dark:text-dark-400">
+                                                            {item.selectedColors.join(' - ')}
+                                                        </span>
+                                                    </div>
+                                                )}
                                             </div>
+                                            {item.unitPrice != null && (
+                                                <div className="text-right">
+                                                    <p className="font-semibold text-primary-500">
+                                                        {(item.unitPrice * item.quantity).toLocaleString('tr-TR')} ₺
+                                                    </p>
+                                                    {item.quantity > 1 && (
+                                                        <p className="text-xs text-light-500 dark:text-dark-500">
+                                                            Birim: {item.unitPrice.toLocaleString('tr-TR')} ₺
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
+                                {selectedRequest.items?.some(item => item.unitPrice != null) && (
+                                    <div className="flex items-center justify-between mt-3 p-3 bg-primary-500/10 rounded-lg">
+                                        <span className="font-semibold text-sm">Toplam Tutar</span>
+                                        <span className="font-bold text-lg text-primary-500">
+                                            {selectedRequest.items.reduce((sum, item) => {
+                                                if (item.unitPrice != null) return sum + (item.unitPrice * item.quantity);
+                                                return sum;
+                                            }, 0).toLocaleString('tr-TR')} ₺
+                                        </span>
+                                    </div>
+                                )}
                             </div>
 
                             {/* General Note */}

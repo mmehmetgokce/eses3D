@@ -23,7 +23,7 @@ export const RequestProvider = ({ children }) => {
     }, [items]);
 
     // Listeye ürün ekle
-    const addItem = (product, quantity = 1, note = '') => {
+    const addItem = (product, quantity = 1, note = '', selectedColors = []) => {
         setItems(prev => {
             const existingIndex = prev.findIndex(item => item.product._id === product._id);
 
@@ -39,7 +39,8 @@ export const RequestProvider = ({ children }) => {
                 product,
                 productName: product.name,
                 quantity,
-                note
+                note,
+                selectedColors
             }];
         });
     };

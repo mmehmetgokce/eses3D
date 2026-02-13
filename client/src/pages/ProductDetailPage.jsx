@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Plus, Check, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react';
 import Loading from '../components/Loading';
+import ColorCircle from '../components/ColorCircle';
 import { getProductById } from '../services/api';
 import { useRequest } from '../context/RequestContext';
 import SEO from '../components/SEO';
@@ -14,6 +15,7 @@ const ProductDetailPage = () => {
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [selectedColorIndex, setSelectedColorIndex] = useState(-1);
     const { addItem, isInList } = useRequest();
 
     const inList = product ? isInList(product._id) : false;
@@ -36,7 +38,16 @@ const ProductDetailPage = () => {
 
     const handleAddToList = () => {
         if (!inList && product) {
-            addItem(product);
+            const hasColors = product.colorCombinations?.length > 0;
+            const selectedColors = hasColors && selectedColorIndex >= 0
+                ? product.colorCombinations[selectedColorIndex].colors
+                : [];
+
+            if (hasColors && selectedColorIndex < 0) {
+                toast.error('Lütfen bir renk seçimi yapın!');
+                return;
+            }
+            addItem(product, 1, '', selectedColors);
             toast.success(`"${product.name}" talep listesine eklendi!`);
         }
     };
@@ -185,9 +196,35 @@ const ProductDetailPage = () => {
                             </p>
                         )}
 
-                        <p className="text-light-600 dark:text-dark-300 leading-relaxed mb-8">
+                        <p className="text-light-600 dark:text-dark-300 leading-relaxed mb-6">
                             {product.description}
                         </p>
+
+                        {/* Renk Seçimi */}
+                        {product.colorCombinations?.length > 0 && (
+                            <div className="mb-6">
+                                <p className="text-sm font-medium text-light-700 dark:text-dark-300 mb-3">
+                                    Renk Seçimi <span className="text-red-500">*</span>
+                                </p>
+                                <div className="flex flex-wrap gap-3">
+                                    {product.colorCombinations.map((combo, index) => (
+                                        <ColorCircle
+                                            key={index}
+                                            colors={combo.colors}
+                                            size={36}
+                                            selected={selectedColorIndex === index}
+                                            onClick={() => setSelectedColorIndex(index)}
+                                            showLabel
+                                        />
+                                    ))}
+                                </div>
+                                {selectedColorIndex >= 0 && (
+                                    <p className="text-sm text-primary-500 mt-2 font-medium">
+                                        Seçilen: {product.colorCombinations[selectedColorIndex].colors.join(' - ')}
+                                    </p>
+                                )}
+                            </div>
+                        )}
 
                         {/* Action Buttons */}
                         <div className="flex flex-col sm:flex-row gap-4 mb-8">

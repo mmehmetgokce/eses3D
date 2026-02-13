@@ -19,6 +19,10 @@ const requestItemSchema = new mongoose.Schema({
         type: Number,
         default: null
     },
+    selectedColors: {
+        type: [String],
+        default: []
+    },
     note: {
         type: String,
         default: ''

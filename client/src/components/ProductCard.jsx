@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Plus, Check } from 'lucide-react';
 import { useRequest } from '../context/RequestContext';
+import ColorCircle from './ColorCircle';
 import toast from 'react-hot-toast';
 
 const ProductCard = ({ product }) => {
@@ -21,7 +22,7 @@ const ProductCard = ({ product }) => {
 
     return (
         <Link
-            to={`/urunler/${product._id}`}
+            to={`/ urunler / ${product._id} `}
             className="card card-hover group"
         >
             {/* Image */}
@@ -42,10 +43,10 @@ const ProductCard = ({ product }) => {
                 {/* Add to List Button */}
                 <button
                     onClick={handleAddToList}
-                    className={`absolute bottom-3 right-3 p-3 rounded-full transition-all duration-300 ${inList
+                    className={`absolute bottom - 3 right - 3 p - 3 rounded - full transition - all duration - 300 ${inList
                         ? 'bg-green-500 text-white cursor-default'
                         : 'bg-primary-500 text-white hover:bg-primary-400 hover:scale-110'
-                        }`}
+                        } `}
                 >
                     {inList ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
                 </button>
@@ -64,6 +65,20 @@ const ProductCard = ({ product }) => {
                     <p className="text-light-500 dark:text-dark-500 text-xs mt-2">
                         Standart Boyut: {product.standardSize}
                     </p>
+                )}
+
+                {/* Renk Seçenekleri */}
+                {product.colorCombinations?.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                        {product.colorCombinations.slice(0, 6).map((combo, i) => (
+                            <ColorCircle key={i} colors={combo.colors} size={20} />
+                        ))}
+                        {product.colorCombinations.length > 6 && (
+                            <span className="text-xs text-light-500 dark:text-dark-400 self-center">
+                                +{product.colorCombinations.length - 6}
+                            </span>
+                        )}
+                    </div>
                 )}
 
                 {/* Fiyat */}

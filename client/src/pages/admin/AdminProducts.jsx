@@ -10,6 +10,7 @@ import {
     deleteProductImage
 } from '../../services/api';
 import Loading from '../../components/Loading';
+import ColorCircle, { COLOR_PALETTE } from '../../components/ColorCircle';
 import toast from 'react-hot-toast';
 
 const AdminProducts = () => {
@@ -24,8 +25,11 @@ const AdminProducts = () => {
         category: '',
         standardSize: '',
         price: '',
+        colorCount: 0,
+        colorCombinations: [],
         order: 0
     });
+    const [tempColors, setTempColors] = useState([]);
     const [saving, setSaving] = useState(false);
     const [uploadingImages, setUploadingImages] = useState(false);
 
@@ -57,8 +61,11 @@ const AdminProducts = () => {
                 category: product.category?._id || '',
                 standardSize: product.standardSize || '',
                 price: product.price != null ? product.price : '',
+                colorCount: product.colorCount || 0,
+                colorCombinations: product.colorCombinations?.map(c => ({ colors: [...c.colors] })) || [],
                 order: product.order || 0
             });
+            setTempColors([]);
         } else {
             setEditingProduct(null);
             setFormData({
@@ -67,8 +74,11 @@ const AdminProducts = () => {
                 category: categories[0]?._id || '',
                 standardSize: '',
                 price: '',
+                colorCount: 0,
+                colorCombinations: [],
                 order: 0
             });
+            setTempColors([]);
         }
         setShowModal(true);
     };
@@ -90,14 +100,18 @@ const AdminProducts = () => {
             if (editingProduct) {
                 const submitData = {
                     ...formData,
-                    price: formData.price !== '' ? Number(formData.price) : null
+                    price: formData.price !== '' ? Number(formData.price) : null,
+                    colorCount: Number(formData.colorCount) || 0,
+                    colorCombinations: formData.colorCombinations
                 };
                 await updateProduct(editingProduct._id, submitData);
                 toast.success('Ürün güncellendi!');
             } else {
                 const submitData = {
                     ...formData,
-                    price: formData.price !== '' ? Number(formData.price) : null
+                    price: formData.price !== '' ? Number(formData.price) : null,
+                    colorCount: Number(formData.colorCount) || 0,
+                    colorCombinations: formData.colorCombinations
                 };
                 await createProduct(submitData);
                 toast.success('Ürün eklendi!');
@@ -332,6 +346,143 @@ const AdminProducts = () => {
                                         className="input"
                                     />
                                 </div>
+                            </div>
+
+                            {/* Renk Kombinasyonları */}
+                            <div className="border border-light-300 dark:border-dark-600 rounded-lg p-4">
+                                <label className="block text-sm font-medium mb-3 text-light-800 dark:text-white">Renk Seçenekleri</label>
+
+                                {/* Renk Sayısı */}
+                                <div className="mb-4">
+                                    <label className="block text-xs text-light-500 dark:text-dark-400 mb-1">Ürün kaç renkten oluşuyor?</label>
+                                    <select
+                                        value={formData.colorCount}
+                                        onChange={(e) => {
+                                            const count = parseInt(e.target.value);
+                                            setFormData({ ...formData, colorCount: count, colorCombinations: count === 0 ? [] : formData.colorCombinations });
+                                            setTempColors([]);
+                                        }}
+                                        className="input w-full md:w-48"
+                                    >
+                                        <option value={0}>Renk yok</option>
+                                        <option value={1}>1 renk</option>
+                                        <option value={2}>2 renk</option>
+                                        <option value={3}>3 renk</option>
+                                        <option value={4}>4 renk</option>
+                                    </select>
+                                </div>
+
+                                {formData.colorCount > 0 && (
+                                    <>
+                                        {/* Yeni Kombinasyon Ekleme */}
+                                        <div className="mb-4 p-3 bg-light-100 dark:bg-dark-700/50 rounded-lg">
+                                            <p className="text-xs text-light-500 dark:text-dark-400 mb-2">
+                                                {formData.colorCount} renk seçin ve kombinasyon ekleyin:
+                                            </p>
+                                            <div className="flex flex-wrap gap-2 mb-3">
+                                                {COLOR_PALETTE.map((color) => (
+                                                    <button
+                                                        key={color.name}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            if (tempColors.includes(color.name)) {
+                                                                setTempColors(tempColors.filter(c => c !== color.name));
+                                                            } else if (tempColors.length < formData.colorCount) {
+                                                                setTempColors([...tempColors, color.name]);
+                                                            }
+                                                        }}
+                                                        className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium transition-all border ${tempColors.includes(color.name)
+                                                                ? 'border-primary-500 bg-primary-500/10 text-primary-600 dark:text-primary-400'
+                                                                : tempColors.length >= formData.colorCount
+                                                                    ? 'border-light-200 dark:border-dark-600 text-light-400 dark:text-dark-600 cursor-not-allowed'
+                                                                    : 'border-light-300 dark:border-dark-600 text-light-700 dark:text-dark-300 hover:border-primary-400'
+                                                            }`}
+                                                        disabled={!tempColors.includes(color.name) && tempColors.length >= formData.colorCount}
+                                                    >
+                                                        <span
+                                                            className="w-4 h-4 rounded-full border border-light-300 dark:border-dark-500 flex-shrink-0"
+                                                            style={{ backgroundColor: color.hex }}
+                                                        />
+                                                        <span>{color.name}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                {tempColors.length > 0 && (
+                                                    <div className="flex items-center gap-2">
+                                                        <ColorCircle colors={tempColors} size={28} />
+                                                        <span className="text-xs text-light-600 dark:text-dark-300">{tempColors.join(' - ')}</span>
+                                                    </div>
+                                                )}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        if (tempColors.length !== formData.colorCount) {
+                                                            toast.error(`${formData.colorCount} renk seçmelisiniz!`);
+                                                            return;
+                                                        }
+                                                        const exists = formData.colorCombinations.some(c =>
+                                                            JSON.stringify([...c.colors].sort()) === JSON.stringify([...tempColors].sort())
+                                                        );
+                                                        if (exists) {
+                                                            toast.error('Bu kombinasyon zaten mevcut!');
+                                                            return;
+                                                        }
+                                                        setFormData({
+                                                            ...formData,
+                                                            colorCombinations: [...formData.colorCombinations, { colors: [...tempColors] }]
+                                                        });
+                                                        setTempColors([]);
+                                                    }}
+                                                    disabled={tempColors.length !== formData.colorCount}
+                                                    className="btn-primary text-xs px-3 py-1.5 disabled:opacity-50"
+                                                >
+                                                    <Plus className="w-3 h-3 inline mr-1" />
+                                                    Ekle
+                                                </button>
+                                                {tempColors.length > 0 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setTempColors([])}
+                                                        className="text-xs text-light-500 hover:text-red-500 transition-colors"
+                                                    >
+                                                        Temizle
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Mevcut Kombinasyonlar */}
+                                        {formData.colorCombinations.length > 0 && (
+                                            <div>
+                                                <p className="text-xs text-light-500 dark:text-dark-400 mb-2">Eklenen Kombinasyonlar:</p>
+                                                <div className="flex flex-wrap gap-3">
+                                                    {formData.colorCombinations.map((combo, index) => (
+                                                        <div
+                                                            key={index}
+                                                            className="flex items-center gap-2 px-3 py-2 bg-light-100 dark:bg-dark-700 rounded-lg border border-light-200 dark:border-dark-600"
+                                                        >
+                                                            <ColorCircle colors={combo.colors} size={24} />
+                                                            <span className="text-xs font-medium">{combo.colors.join(' - ')}</span>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setFormData({
+                                                                        ...formData,
+                                                                        colorCombinations: formData.colorCombinations.filter((_, i) => i !== index)
+                                                                    });
+                                                                }}
+                                                                className="text-light-400 hover:text-red-500 transition-colors ml-1"
+                                                            >
+                                                                <X className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
                             </div>
 
                             {/* Image Upload - Only for existing products */}
