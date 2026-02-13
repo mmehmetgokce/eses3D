@@ -93,6 +93,7 @@ const RequestListPage = () => {
                     product: item.product._id,
                     productName: item.product.name,
                     quantity: item.quantity,
+                    unitPrice: item.product.price || null,
                     note: item.note
                 }))
             };
@@ -103,7 +104,8 @@ const RequestListPage = () => {
                 // Ürün bilgilerini success sayfasına aktar
                 const orderItems = items.map(item => ({
                     name: item.product.name,
-                    quantity: item.quantity
+                    quantity: item.quantity,
+                    price: item.product.price || null
                 }));
                 clearList();
                 navigate(`/talep-basarili/${response.data.data.requestId}`, {
@@ -185,25 +187,42 @@ const RequestListPage = () => {
                                             </p>
                                         )}
 
-                                        {/* Quantity */}
-                                        <div className="flex items-center space-x-3 mb-3">
-                                            <span className="text-light-500 dark:text-dark-400 text-sm">Adet:</span>
-                                            <div className="flex items-center space-x-2">
-                                                <button
-                                                    onClick={() => updateQuantity(item.product._id, item.quantity - 1)}
-                                                    disabled={item.quantity <= 1}
-                                                    className="p-1 bg-light-200 dark:bg-dark-700 rounded hover:bg-light-300 dark:hover:bg-dark-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                >
-                                                    <Minus className="w-4 h-4" />
-                                                </button>
-                                                <span className="w-8 text-center font-medium">{item.quantity}</span>
-                                                <button
-                                                    onClick={() => updateQuantity(item.product._id, item.quantity + 1)}
-                                                    className="p-1 bg-light-200 dark:bg-dark-700 rounded hover:bg-light-300 dark:hover:bg-dark-600"
-                                                >
-                                                    <Plus className="w-4 h-4" />
-                                                </button>
+                                        {/* Fiyat ve Quantity yan yana */}
+                                        <div className="flex items-center justify-between mb-3">
+                                            {/* Quantity */}
+                                            <div className="flex items-center space-x-3">
+                                                <span className="text-light-500 dark:text-dark-400 text-sm">Adet:</span>
+                                                <div className="flex items-center space-x-2">
+                                                    <button
+                                                        onClick={() => updateQuantity(item.product._id, item.quantity - 1)}
+                                                        disabled={item.quantity <= 1}
+                                                        className="p-1 bg-light-200 dark:bg-dark-700 rounded hover:bg-light-300 dark:hover:bg-dark-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
+                                                        <Minus className="w-4 h-4" />
+                                                    </button>
+                                                    <span className="w-8 text-center font-medium">{item.quantity}</span>
+                                                    <button
+                                                        onClick={() => updateQuantity(item.product._id, item.quantity + 1)}
+                                                        className="p-1 bg-light-200 dark:bg-dark-700 rounded hover:bg-light-300 dark:hover:bg-dark-600"
+                                                    >
+                                                        <Plus className="w-4 h-4" />
+                                                    </button>
+                                                </div>
                                             </div>
+
+                                            {/* Birim Fiyat */}
+                                            {item.product.price != null && (
+                                                <div className="text-right">
+                                                    <span className="text-lg font-bold text-primary-500 dark:text-primary-400">
+                                                        {(item.product.price * item.quantity).toLocaleString('tr-TR')} ₺
+                                                    </span>
+                                                    {item.quantity > 1 && (
+                                                        <p className="text-xs text-light-500 dark:text-dark-500">
+                                                            Birim: {item.product.price.toLocaleString('tr-TR')} ₺
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Note */}
@@ -243,6 +262,22 @@ const RequestListPage = () => {
                                 <p className="text-light-500 dark:text-dark-500 text-sm">
                                     ({items.reduce((sum, item) => sum + item.quantity, 0)} adet)
                                 </p>
+                                {items.some(item => item.product.price != null) && (
+                                    <div className="mt-3 pt-3 border-t border-light-200 dark:border-dark-700">
+                                        <p className="text-light-500 dark:text-dark-400 text-sm">Tahmini Toplam</p>
+                                        <p className="text-xl font-bold text-primary-500 dark:text-primary-400">
+                                            {items.reduce((sum, item) => {
+                                                if (item.product.price != null) {
+                                                    return sum + (item.product.price * item.quantity);
+                                                }
+                                                return sum;
+                                            }, 0).toLocaleString('tr-TR')} ₺
+                                        </p>
+                                        <p className="text-light-500 dark:text-dark-500 text-xs mt-1">
+                                            * Fiyatlar değişiklik gösterebilir
+                                        </p>
+                                    </div>
+                                )}
                             </div>
 
                             <form onSubmit={handleFormSubmit} className="space-y-4">
@@ -369,17 +404,37 @@ const RequestListPage = () => {
                                         className={`flex items-center justify-between py-2 ${index !== items.length - 1 ? 'border-b border-light-200 dark:border-dark-600' : ''}`}
                                     >
                                         <span className="text-sm font-medium">{item.product.name}</span>
-                                        <span className="text-sm text-light-500 dark:text-dark-400">
-                                            {item.quantity} adet
-                                        </span>
+                                        <div className="text-right">
+                                            <span className="text-sm text-light-500 dark:text-dark-400">
+                                                {item.quantity} adet
+                                            </span>
+                                            {item.product.price != null && (
+                                                <p className="text-xs font-medium text-primary-500">
+                                                    {(item.product.price * item.quantity).toLocaleString('tr-TR')} ₺
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
                                 ))}
                             </div>
 
-                            <div className="flex items-center justify-between text-sm font-semibold mb-4 px-1">
+                            <div className="flex items-center justify-between text-sm font-semibold mb-2 px-1">
                                 <span>Toplam</span>
                                 <span>{items.reduce((sum, item) => sum + item.quantity, 0)} adet</span>
                             </div>
+                            {items.some(item => item.product.price != null) && (
+                                <div className="flex items-center justify-between text-sm font-semibold mb-4 px-1 text-primary-500">
+                                    <span>Tahmini Tutar</span>
+                                    <span>
+                                        {items.reduce((sum, item) => {
+                                            if (item.product.price != null) {
+                                                return sum + (item.product.price * item.quantity);
+                                            }
+                                            return sum;
+                                        }, 0).toLocaleString('tr-TR')} ₺
+                                    </span>
+                                </div>
+                            )}
 
                             <p className="text-light-500 dark:text-dark-500 text-xs mb-4">
                                 Onayladıktan sonra talebiniz bize iletilecek ve sizinle iletişime geçilecektir.

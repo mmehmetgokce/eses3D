@@ -23,6 +23,11 @@ const productSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
+    price: {
+        type: Number,
+        default: null,
+        min: 0
+    },
     isActive: {
         type: Boolean,
         default: true

@@ -100,10 +100,21 @@ const AdminRequests = () => {
 
         if (items.length > 0) {
             message += '\n\nTalep ettiğiniz ürünler:';
+            let totalPrice = 0;
+            let hasPrice = false;
             items.forEach(function (item) {
                 const name = item.productName || (item.product && item.product.name) || 'Ürün';
-                message += '\n• ' + name + ' - ' + item.quantity + ' adet';
+                let line = '\n• ' + name + ' - ' + item.quantity + ' adet';
+                if (item.unitPrice != null) {
+                    line += ' (' + (item.unitPrice * item.quantity) + ' ₺)';
+                    totalPrice += item.unitPrice * item.quantity;
+                    hasPrice = true;
+                }
+                message += line;
             });
+            if (hasPrice) {
+                message += '\n\nTahmini Toplam: ' + totalPrice + ' ₺';
+            }
         }
 
         const url = 'https://wa.me/' + targetNumber + '?text=' + encodeURIComponent(message);

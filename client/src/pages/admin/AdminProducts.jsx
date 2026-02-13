@@ -23,6 +23,7 @@ const AdminProducts = () => {
         description: '',
         category: '',
         standardSize: '',
+        price: '',
         order: 0
     });
     const [saving, setSaving] = useState(false);
@@ -55,6 +56,7 @@ const AdminProducts = () => {
                 description: product.description,
                 category: product.category?._id || '',
                 standardSize: product.standardSize || '',
+                price: product.price != null ? product.price : '',
                 order: product.order || 0
             });
         } else {
@@ -64,6 +66,7 @@ const AdminProducts = () => {
                 description: '',
                 category: categories[0]?._id || '',
                 standardSize: '',
+                price: '',
                 order: 0
             });
         }
@@ -85,10 +88,18 @@ const AdminProducts = () => {
         try {
             setSaving(true);
             if (editingProduct) {
-                await updateProduct(editingProduct._id, formData);
+                const submitData = {
+                    ...formData,
+                    price: formData.price !== '' ? Number(formData.price) : null
+                };
+                await updateProduct(editingProduct._id, submitData);
                 toast.success('Ürün güncellendi!');
             } else {
-                await createProduct(formData);
+                const submitData = {
+                    ...formData,
+                    price: formData.price !== '' ? Number(formData.price) : null
+                };
+                await createProduct(submitData);
                 toast.success('Ürün eklendi!');
             }
             closeModal();
@@ -220,6 +231,11 @@ const AdminProducts = () => {
                                 </div>
                                 <p className="text-light-500 dark:text-dark-500 text-xs mt-2">
                                     {product.images?.length || 0} görsel
+                                    {product.price != null && (
+                                        <span className="ml-2 text-primary-500 font-medium">
+                                            {product.price.toLocaleString('tr-TR')} ₺
+                                        </span>
+                                    )}
                                 </p>
                             </div>
                         </div>
@@ -282,7 +298,7 @@ const AdminProducts = () => {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium mb-2 text-light-800 dark:text-white">Standart Boyut</label>
                                     <input
@@ -290,6 +306,19 @@ const AdminProducts = () => {
                                         value={formData.standardSize}
                                         onChange={(e) => setFormData({ ...formData, standardSize: e.target.value })}
                                         placeholder="Örn: 5x3x1 cm"
+                                        className="input"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium mb-2 text-light-800 dark:text-white">Fiyat (₺)</label>
+                                    <input
+                                        type="number"
+                                        value={formData.price}
+                                        onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                                        placeholder="Örn: 150"
+                                        min="0"
+                                        step="0.01"
                                         className="input"
                                     />
                                 </div>

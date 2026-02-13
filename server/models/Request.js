@@ -15,6 +15,10 @@ const requestItemSchema = new mongoose.Schema({
         default: 1,
         min: 1
     },
+    unitPrice: {
+        type: Number,
+        default: null
+    },
     note: {
         type: String,
         default: ''

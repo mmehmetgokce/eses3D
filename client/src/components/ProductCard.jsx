@@ -65,6 +65,19 @@ const ProductCard = ({ product }) => {
                         Standart Boyut: {product.standardSize}
                     </p>
                 )}
+
+                {/* Fiyat */}
+                <div className="mt-3 pt-3 border-t border-light-200 dark:border-dark-700">
+                    {product.price != null ? (
+                        <span className="text-lg font-bold text-primary-500 dark:text-primary-400">
+                            {product.price.toLocaleString('tr-TR')} ₺
+                        </span>
+                    ) : (
+                        <span className="text-sm text-light-500 dark:text-dark-400 italic">
+                            Fiyat Sorunuz
+                        </span>
+                    )}
+                </div>
             </div>
         </Link>
     );

@@ -69,9 +69,16 @@ const RequestSuccessPage = () => {
                                         className={`flex items-center justify-between py-2 ${index !== orderItems.length - 1 ? 'border-b border-light-200 dark:border-dark-600' : ''}`}
                                     >
                                         <span className="text-sm">{item.name}</span>
-                                        <span className="text-sm font-medium text-primary-500 dark:text-primary-400">
-                                            {item.quantity} adet
-                                        </span>
+                                        <div className="text-right">
+                                            <span className="text-sm font-medium text-primary-500 dark:text-primary-400">
+                                                {item.quantity} adet
+                                            </span>
+                                            {item.price != null && (
+                                                <p className="text-xs text-light-500 dark:text-dark-500">
+                                                    {(item.price * item.quantity).toLocaleString('tr-TR')} ₺
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -82,6 +89,17 @@ const RequestSuccessPage = () => {
                                     {orderItems.reduce((sum, item) => sum + item.quantity, 0)} adet
                                 </span>
                             </div>
+                            {orderItems.some(item => item.price != null) && (
+                                <div className="flex items-center justify-between mt-2 font-semibold text-sm">
+                                    <span>Tahmini Tutar</span>
+                                    <span className="text-primary-500 dark:text-primary-400">
+                                        {orderItems.reduce((sum, item) => {
+                                            if (item.price != null) return sum + (item.price * item.quantity);
+                                            return sum;
+                                        }, 0).toLocaleString('tr-TR')} ₺
+                                    </span>
+                                </div>
+                            )}
 
                             <div className="flex items-center space-x-2 mt-4 p-3 bg-light-100 dark:bg-dark-700/50 rounded-lg">
                                 <Camera className="w-4 h-4 text-light-500 dark:text-dark-400 flex-shrink-0" />

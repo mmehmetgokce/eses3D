@@ -163,6 +163,22 @@ const ProductDetailPage = () => {
 
                         <h1 className="text-3xl md:text-4xl font-bold mb-4 text-light-900 dark:text-white">{product.name}</h1>
 
+                        {/* Fiyat */}
+                        <div className="mb-4">
+                            {product.price != null ? (
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-2xl md:text-3xl font-bold text-primary-500 dark:text-primary-400">
+                                        {product.price.toLocaleString('tr-TR')} ₺
+                                    </span>
+                                    <span className="text-xs text-light-500 dark:text-dark-500">KDV dahil</span>
+                                </div>
+                            ) : (
+                                <span className="text-lg text-light-500 dark:text-dark-400 italic">
+                                    Fiyat bilgisi için iletişime geçin
+                                </span>
+                            )}
+                        </div>
+
                         {product.standardSize && (
                             <p className="text-light-500 dark:text-dark-400 mb-4">
                                 <span className="font-medium text-light-700 dark:text-dark-300">Standart Boyut:</span> {product.standardSize}
