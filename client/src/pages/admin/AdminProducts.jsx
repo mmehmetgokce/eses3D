@@ -301,14 +301,13 @@ const AdminProducts = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium mb-2 text-light-800 dark:text-white">Açıklama *</label>
+                                <label className="block text-sm font-medium mb-2 text-light-800 dark:text-white">Açıklama</label>
                                 <textarea
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                     placeholder="Ürün açıklaması"
                                     rows={3}
                                     className="input resize-none"
-                                    required
                                 />
                             </div>
 
