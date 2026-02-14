@@ -8,7 +8,7 @@ const productSchema = new mongoose.Schema({
     },
     description: {
         type: String,
-        required: [true, 'Ürün açıklaması zorunludur']
+        default: ''
     },
     category: {
         type: mongoose.Schema.Types.ObjectId,
