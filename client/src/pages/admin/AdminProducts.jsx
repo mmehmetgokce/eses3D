@@ -90,8 +90,8 @@ const AdminProducts = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!formData.name.trim() || !formData.description.trim() || !formData.category) {
-            toast.error('Ad, açıklama ve kategori gereklidir!');
+        if (!formData.name.trim() || !formData.category) {
+            toast.error('Ad ve kategori gereklidir!');
             return;
         }
 
