@@ -21,16 +21,19 @@ const createTransporter = () => {
  */
 export const sendNewRequestNotification = async (request) => {
     const transporter = createTransporter();
-    if (!transporter) return;
+    if (!transporter) {
+        throw new Error('Transporter oluşturulamadı: EMAIL_USER=' + (process.env.EMAIL_USER ? 'SET' : 'MISSING') + ', EMAIL_PASS=' + (process.env.EMAIL_PASS ? 'SET' : 'MISSING'));
+    }
 
     const notificationEmails = process.env.NOTIFICATION_EMAILS;
     if (!notificationEmails) {
-        console.warn('NOTIFICATION_EMAILS tanımlı değil. E-posta gönderilmedi.');
-        return;
+        throw new Error('NOTIFICATION_EMAILS tanımlı değil');
     }
 
     const recipients = notificationEmails.split(',').map(e => e.trim()).filter(Boolean);
-    if (recipients.length === 0) return;
+    if (recipients.length === 0) {
+        throw new Error('NOTIFICATION_EMAILS boş');
+    }
 
     // Müşteri bilgileri
     const fullName = `${request.customerName || ''} ${request.customerSurname || ''}`.trim();
