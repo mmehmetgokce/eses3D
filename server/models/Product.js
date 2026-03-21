@@ -34,8 +34,9 @@ const productSchema = new mongoose.Schema({
         min: 0,
         max: 4
     },
-    colorCombinations: [{
-        colors: [String]
+    colorSlots: [{
+        label: { type: String, default: '' },
+        allowedColors: [String]
     }],
     isActive: {
         type: Boolean,

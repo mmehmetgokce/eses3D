@@ -4,6 +4,18 @@ import ColorCircle from './ColorCircle';
 const ProductCard = ({ product }) => {
     const mainImage = product.images?.[0]?.url || '/placeholder.jpg';
 
+    // Tüm slotlardaki izin verilen renkleri tekrarsız topla
+    const allColors = [];
+    if (product.colorSlots?.length > 0) {
+        product.colorSlots.forEach(slot => {
+            slot.allowedColors?.forEach(color => {
+                if (!allColors.includes(color)) {
+                    allColors.push(color);
+                }
+            });
+        });
+    }
+
     return (
         <Link
             to={`/urunler/${product._id}`}
@@ -40,15 +52,15 @@ const ProductCard = ({ product }) => {
                     </p>
                 )}
 
-                {/* Renk Seçenekleri */}
-                {product.colorCombinations?.length > 0 && (
+                {/* İzin Verilen Renk Daireleri */}
+                {allColors.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mt-2">
-                        {product.colorCombinations.slice(0, 6).map((combo, i) => (
-                            <ColorCircle key={i} colors={combo.colors} size={20} />
+                        {allColors.slice(0, 8).map((colorName) => (
+                            <ColorCircle key={colorName} colors={[colorName]} size={20} />
                         ))}
-                        {product.colorCombinations.length > 6 && (
+                        {allColors.length > 8 && (
                             <span className="text-xs text-light-500 dark:text-dark-400 self-center">
-                                +{product.colorCombinations.length - 6}
+                                +{allColors.length - 8}
                             </span>
                         )}
                     </div>

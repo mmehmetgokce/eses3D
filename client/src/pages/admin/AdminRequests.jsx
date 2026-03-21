@@ -107,7 +107,10 @@ const AdminRequests = () => {
                 const name = item.productName || (item.product && item.product.name) || 'Ürün';
                 let line = '\n• ' + name + ' - ' + item.quantity + ' adet';
                 if (item.selectedColors && item.selectedColors.length > 0) {
-                    line += ' (Renk: ' + item.selectedColors.join('-') + ')';
+                    const colorText = item.selectedColors.map(function (sc) {
+                        return (sc.label || '') + ': ' + (sc.color || '');
+                    }).join(', ');
+                    line += ' (Renk: ' + colorText + ')';
                 }
                 if (item.unitPrice != null) {
                     line += ' (' + (item.unitPrice * item.quantity) + ' ₺)';
@@ -338,11 +341,15 @@ const AdminRequests = () => {
                                                     <p className="text-light-500 dark:text-dark-500 text-xs">Not: {item.note}</p>
                                                 )}
                                                 {item.selectedColors?.length > 0 && (
-                                                    <div className="flex items-center gap-1.5 mt-1">
-                                                        <ColorCircle colors={item.selectedColors} size={16} />
-                                                        <span className="text-xs text-light-500 dark:text-dark-400">
-                                                            {item.selectedColors.join(' - ')}
-                                                        </span>
+                                                    <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                                                        {item.selectedColors.map((sc, ci) => (
+                                                            <div key={ci} className="flex items-center gap-1">
+                                                                <ColorCircle colors={[sc.color]} size={16} />
+                                                                <span className="text-xs text-light-500 dark:text-dark-400">
+                                                                    {sc.label}: {sc.color}
+                                                                </span>
+                                                            </div>
+                                                        ))}
                                                     </div>
                                                 )}
                                             </div>

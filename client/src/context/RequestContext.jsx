@@ -10,9 +10,10 @@ export const useRequest = () => {
     return context;
 };
 
-// Ürün + renk kombinasyonundan benzersiz key oluştur
+// Ürün + renk seçiminden benzersiz key oluştur
 const getItemKey = (productId, selectedColors = []) => {
-    const colorKey = selectedColors.length > 0 ? selectedColors.sort().join('|') : 'no-color';
+    if (selectedColors.length === 0) return `${productId}__no-color`;
+    const colorKey = selectedColors.map(c => `${c.label}:${c.color}`).sort().join('|');
     return `${productId}__${colorKey}`;
 };
 
@@ -34,13 +35,11 @@ export const RequestProvider = ({ children }) => {
             const existingIndex = prev.findIndex(item => item._itemKey === key);
 
             if (existingIndex > -1) {
-                // Aynı ürün + aynı renk zaten var, miktarı güncelle
                 const updated = [...prev];
                 updated[existingIndex].quantity += quantity;
                 return updated;
             }
 
-            // Yeni satır ekle
             return [...prev, {
                 _itemKey: key,
                 product,
@@ -52,12 +51,12 @@ export const RequestProvider = ({ children }) => {
         });
     };
 
-    // Listeden ürün çıkar (key bazlı)
+    // Listeden ürün çıkar
     const removeItem = (itemKey) => {
         setItems(prev => prev.filter(item => item._itemKey !== itemKey));
     };
 
-    // Ürün miktarını güncelle (key bazlı)
+    // Ürün miktarını güncelle
     const updateQuantity = (itemKey, quantity) => {
         if (quantity < 1) return;
         setItems(prev => prev.map(item =>
@@ -67,7 +66,7 @@ export const RequestProvider = ({ children }) => {
         ));
     };
 
-    // Ürün notunu güncelle (key bazlı)
+    // Ürün notunu güncelle
     const updateNote = (itemKey, note) => {
         setItems(prev => prev.map(item =>
             item._itemKey === itemKey

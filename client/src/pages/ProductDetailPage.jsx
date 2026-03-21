@@ -15,16 +15,22 @@ const ProductDetailPage = () => {
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const [selectedColorIndex, setSelectedColorIndex] = useState(-1);
+    // Slot bazlı renk seçimi: { 0: 'Siyah', 1: 'Beyaz' }
+    const [slotSelections, setSlotSelections] = useState({});
     const { addItem, isInList } = useRequest();
 
-    // Seçili renk kombinasyonu ile listede mi kontrol et
+    const hasColorSlots = product?.colorSlots?.length > 0;
+    const allSlotsSelected = hasColorSlots
+        ? product.colorSlots.every((_, i) => slotSelections[i])
+        : true;
+
+    // Seçili renkleri [{label, color}] formatına dönüştür
     const getSelectedColors = () => {
-        if (!product) return [];
-        const hasColors = product.colorCombinations?.length > 0;
-        return hasColors && selectedColorIndex >= 0
-            ? product.colorCombinations[selectedColorIndex].colors
-            : [];
+        if (!product || !hasColorSlots || !allSlotsSelected) return [];
+        return product.colorSlots.map((slot, i) => ({
+            label: slot.label || `${i + 1}. Renk`,
+            color: slotSelections[i]
+        }));
     };
 
     const currentColors = getSelectedColors();
@@ -48,24 +54,27 @@ const ProductDetailPage = () => {
 
     const handleAddToList = () => {
         if (product) {
-            const hasColors = product.colorCombinations?.length > 0;
-
-            if (hasColors && selectedColorIndex < 0) {
-                toast.error('Lütfen bir renk seçimi yapın!');
+            if (hasColorSlots && !allSlotsSelected) {
+                const missingSlots = product.colorSlots
+                    .filter((_, i) => !slotSelections[i])
+                    .map((s, i) => s.label || `${i + 1}. Renk`);
+                toast.error(`Lütfen tüm renkleri seçin: ${missingSlots.join(', ')}`);
                 return;
             }
 
             if (inList) {
-                toast('Bu renk zaten listenizde!', { icon: '⚠️' });
+                toast('Bu renk kombinasyonu zaten listenizde!', { icon: '⚠️' });
                 return;
             }
 
             addItem(product, 1, '', currentColors);
-            const colorText = currentColors.length > 0 ? ` (${currentColors.join('-')})` : '';
+            const colorText = currentColors.length > 0
+                ? ` (${currentColors.map(c => `${c.label}: ${c.color}`).join(', ')})`
+                : '';
             toast.success(`"${product.name}"${colorText} talep listesine eklendi!`);
 
-            // Renk seçimini sıfırla, başka renk ekleyebilsin
-            setSelectedColorIndex(-1);
+            // Renk seçimini sıfırla
+            setSlotSelections({});
         }
     };
 
@@ -217,28 +226,47 @@ const ProductDetailPage = () => {
                             {product.description}
                         </p>
 
-                        {/* Renk Seçimi */}
-                        {product.colorCombinations?.length > 0 && (
-                            <div className="mb-6">
-                                <p className="text-sm font-medium text-light-700 dark:text-dark-300 mb-3">
+                        {/* Slot Bazlı Renk Seçimi */}
+                        {hasColorSlots && (
+                            <div className="mb-6 space-y-4">
+                                <p className="text-sm font-medium text-light-700 dark:text-dark-300">
                                     Renk Seçimi <span className="text-red-500">*</span>
                                 </p>
-                                <div className="flex flex-wrap gap-3">
-                                    {product.colorCombinations.map((combo, index) => (
-                                        <ColorCircle
-                                            key={index}
-                                            colors={combo.colors}
-                                            size={36}
-                                            selected={selectedColorIndex === index}
-                                            onClick={() => setSelectedColorIndex(index)}
-                                            showLabel
-                                        />
-                                    ))}
-                                </div>
-                                {selectedColorIndex >= 0 && (
-                                    <p className="text-sm text-primary-500 mt-2 font-medium">
-                                        Seçilen: {product.colorCombinations[selectedColorIndex].colors.join(' - ')}
-                                    </p>
+                                {product.colorSlots.map((slot, slotIndex) => (
+                                    <div key={slotIndex} className="bg-light-100 dark:bg-dark-800/50 rounded-lg p-4">
+                                        <p className="text-sm font-medium text-light-700 dark:text-dark-300 mb-2">
+                                            {slot.label || `${slotIndex + 1}. Renk`}
+                                            {slotSelections[slotIndex] && (
+                                                <span className="ml-2 text-primary-500 text-xs">
+                                                    — {slotSelections[slotIndex]}
+                                                </span>
+                                            )}
+                                        </p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {slot.allowedColors?.map((colorName) => (
+                                                <ColorCircle
+                                                    key={colorName}
+                                                    colors={[colorName]}
+                                                    size={32}
+                                                    selected={slotSelections[slotIndex] === colorName}
+                                                    onClick={() => setSlotSelections(prev => ({
+                                                        ...prev,
+                                                        [slotIndex]: prev[slotIndex] === colorName ? undefined : colorName
+                                                    }))}
+                                                    showLabel
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                                {/* Seçim Özeti */}
+                                {allSlotsSelected && (
+                                    <div className="flex items-center gap-2 text-sm text-primary-500 font-medium">
+                                        <Check className="w-4 h-4" />
+                                        <span>
+                                            Seçiminiz: {currentColors.map(c => `${c.label}: ${c.color}`).join(' · ')}
+                                        </span>
+                                    </div>
                                 )}
                             </div>
                         )}

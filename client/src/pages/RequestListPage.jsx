@@ -192,12 +192,16 @@ const RequestListPage = () => {
 
                                         {/* Seçilen Renk */}
                                         {item.selectedColors?.length > 0 && (
-                                            <div className="flex items-center gap-2 mb-3">
+                                            <div className="flex flex-wrap items-center gap-2 mb-3">
                                                 <span className="text-light-500 dark:text-dark-400 text-sm">Renk:</span>
-                                                <ColorCircle colors={item.selectedColors} size={22} />
-                                                <span className="text-sm text-light-600 dark:text-dark-300">
-                                                    {item.selectedColors.join(' - ')}
-                                                </span>
+                                                {item.selectedColors.map((sc, ci) => (
+                                                    <div key={ci} className="flex items-center gap-1">
+                                                        <ColorCircle colors={[sc.color]} size={18} />
+                                                        <span className="text-xs text-light-600 dark:text-dark-300">
+                                                            {sc.label}: {sc.color}
+                                                        </span>
+                                                    </div>
+                                                ))}
                                             </div>
                                         )}
 
@@ -420,9 +424,12 @@ const RequestListPage = () => {
                                         <div>
                                             <span className="text-sm font-medium">{item.product.name}</span>
                                             {item.selectedColors?.length > 0 && (
-                                                <div className="flex items-center gap-1 mt-0.5">
-                                                    <ColorCircle colors={item.selectedColors} size={14} />
-                                                    <span className="text-xs text-light-500 dark:text-dark-500">{item.selectedColors.join('-')}</span>
+                                                <div className="flex flex-wrap items-center gap-1 mt-0.5">
+                                                    {item.selectedColors.map((sc, ci) => (
+                                                        <span key={ci} className="text-xs text-light-500 dark:text-dark-500">
+                                                            {sc.label}: {sc.color}{ci < item.selectedColors.length - 1 ? ',' : ''}
+                                                        </span>
+                                                    ))}
                                                 </div>
                                             )}
                                         </div>

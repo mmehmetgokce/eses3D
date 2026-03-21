@@ -75,11 +75,12 @@ const RequestSuccessPage = () => {
                                                 {item.quantity} adet
                                             </span>
                                             {item.selectedColors?.length > 0 && (
-                                                <div className="flex items-center gap-1 justify-end mt-0.5">
-                                                    <ColorCircle colors={item.selectedColors} size={14} />
-                                                    <span className="text-xs text-light-500 dark:text-dark-500">
-                                                        {item.selectedColors.join('-')}
-                                                    </span>
+                                                <div className="flex flex-wrap items-center gap-1 justify-end mt-0.5">
+                                                    {item.selectedColors.map((sc, ci) => (
+                                                        <span key={ci} className="text-xs text-light-500 dark:text-dark-500">
+                                                            {sc.label}: {sc.color}{ci < item.selectedColors.length - 1 ? ',' : ''}
+                                                        </span>
+                                                    ))}
                                                 </div>
                                             )}
                                             {item.price != null && (
