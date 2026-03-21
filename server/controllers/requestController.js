@@ -1,4 +1,5 @@
 import Request from '../models/Request.js';
+import { sendNewRequestNotification } from '../services/emailService.js';
 
 // @desc    Yeni talep oluştur
 // @route   POST /api/requests
@@ -41,6 +42,11 @@ export const createRequest = async (req, res) => {
             },
             message: 'Talebiniz başarıyla oluşturuldu!'
         });
+
+        // E-posta bildirimini arka planda gönder (response'u bekletmez)
+        sendNewRequestNotification(request).catch(err =>
+            console.error('E-posta bildirim hatası:', err.message)
+        );
     } catch (error) {
         res.status(500).json({
             success: false,
