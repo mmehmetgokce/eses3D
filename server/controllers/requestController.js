@@ -34,6 +34,15 @@ export const createRequest = async (req, res) => {
             generalNote
         });
 
+        // E-posta bildirimini gönder (response'tan önce)
+        try {
+            console.log(`[EMAIL] Talep oluşturuldu: ${requestId}, e-posta gönderimi başlatılıyor...`);
+            await sendNewRequestNotification(request);
+            console.log(`[EMAIL] E-posta gönderimi tamamlandı: ${requestId}`);
+        } catch (emailErr) {
+            console.error(`[EMAIL] Gönderim hatası (${requestId}):`, emailErr.message);
+        }
+
         res.status(201).json({
             success: true,
             data: {
@@ -42,11 +51,6 @@ export const createRequest = async (req, res) => {
             },
             message: 'Talebiniz başarıyla oluşturuldu!'
         });
-
-        // E-posta bildirimini arka planda gönder (response'u bekletmez)
-        sendNewRequestNotification(request).catch(err =>
-            console.error('E-posta bildirim hatası:', err.message)
-        );
     } catch (error) {
         res.status(500).json({
             success: false,
