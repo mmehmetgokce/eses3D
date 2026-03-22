@@ -1,31 +1,12 @@
-import nodemailer from 'nodemailer';
-
-// Gmail SMTP transporter
-const createTransporter = () => {
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-        console.warn('E-posta ayarları eksik (EMAIL_USER / EMAIL_PASS). Bildirimler gönderilemeyecek.');
-        return null;
-    }
-
-    return nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS
-        },
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,
-        socketTimeout: 15000
-    });
-};
+import { Resend } from 'resend';
 
 /**
- * Yeni talep oluşturulduğunda bildirim e-postası gönder
+ * Yeni talep oluşturulduğunda bildirim e-postası gönder (Resend API)
  */
 export const sendNewRequestNotification = async (request) => {
-    const transporter = createTransporter();
-    if (!transporter) {
-        throw new Error('Transporter oluşturulamadı: EMAIL_USER=' + (process.env.EMAIL_USER ? 'SET' : 'MISSING') + ', EMAIL_PASS=' + (process.env.EMAIL_PASS ? 'SET' : 'MISSING'));
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+        throw new Error('RESEND_API_KEY tanımlı değil');
     }
 
     const notificationEmails = process.env.NOTIFICATION_EMAILS;
@@ -37,6 +18,8 @@ export const sendNewRequestNotification = async (request) => {
     if (recipients.length === 0) {
         throw new Error('NOTIFICATION_EMAILS boş');
     }
+
+    const resend = new Resend(apiKey);
 
     // Müşteri bilgileri
     const fullName = `${request.customerName || ''} ${request.customerSurname || ''}`.trim();
@@ -51,7 +34,6 @@ export const sendNewRequestNotification = async (request) => {
         const name = item.productName || 'Ürün';
         const qty = item.quantity || 1;
 
-        // Renk bilgisi
         let colorText = '';
         if (item.selectedColors && item.selectedColors.length > 0) {
             colorText = item.selectedColors.map(sc => {
@@ -62,7 +44,6 @@ export const sendNewRequestNotification = async (request) => {
             }).join(', ');
         }
 
-        // Fiyat
         let priceText = '';
         if (item.unitPrice != null) {
             const lineTotal = item.unitPrice * qty;
@@ -83,20 +64,15 @@ export const sendNewRequestNotification = async (request) => {
             </tr>`;
     });
 
-    // Not
     const noteText = request.generalNote ? `<p style="margin: 10px 0; color: #6b7280; font-size: 14px;"><strong>Genel Not:</strong> ${request.generalNote}</p>` : '';
 
     const html = `
     <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden;">
-        <!-- Header -->
         <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 24px; text-align: center;">
             <h1 style="margin: 0; color: #ffffff; font-size: 20px;">🔔 Yeni Talep Alındı</h1>
             <p style="margin: 8px 0 0; color: rgba(255,255,255,0.85); font-size: 14px;">${request.requestId}</p>
         </div>
-
-        <!-- Content -->
         <div style="padding: 24px;">
-            <!-- Müşteri Bilgileri -->
             <div style="background: #f9fafb; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
                 <h3 style="margin: 0 0 12px; font-size: 15px; color: #374151;">Müşteri Bilgileri</h3>
                 <p style="margin: 4px 0; font-size: 14px; color: #4b5563;">
@@ -106,8 +82,6 @@ export const sendNewRequestNotification = async (request) => {
                     <strong>Telefon:</strong> ${phone}
                 </p>
             </div>
-
-            <!-- Ürünler Tablosu -->
             <h3 style="margin: 0 0 12px; font-size: 15px; color: #374151;">Talep Edilen Ürünler</h3>
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
                 <thead>
@@ -122,16 +96,12 @@ export const sendNewRequestNotification = async (request) => {
                     ${itemsHtml}
                 </tbody>
             </table>
-
             ${hasPrice ? `
             <div style="background: #eef2ff; border-radius: 8px; padding: 12px 16px; text-align: right; margin-bottom: 16px;">
                 <strong style="font-size: 16px; color: #4f46e5;">Tahmini Toplam: ${totalPrice.toLocaleString('tr-TR')} ₺</strong>
             </div>
             ` : ''}
-
             ${noteText}
-
-            <!-- Admin Link -->
             <div style="text-align: center; margin-top: 24px;">
                 <a href="https://eses3-d.vercel.app/admin/requests?status=pending"
                    style="display: inline-block; background: #6366f1; color: #ffffff; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600;">
@@ -139,27 +109,23 @@ export const sendNewRequestNotification = async (request) => {
                 </a>
             </div>
         </div>
-
-        <!-- Footer -->
         <div style="padding: 16px 24px; background: #f9fafb; text-align: center; border-top: 1px solid #e5e7eb;">
             <p style="margin: 0; font-size: 12px; color: #9ca3af;">
-                eses3D Bildirim Sistemi • ${new Date().toLocaleDateString('tr-TR')}
+                eses3D Bildirim Sistemi
             </p>
         </div>
     </div>`;
 
-    const mailOptions = {
-        from: `"eses3D Bildirim" <${process.env.EMAIL_USER}>`,
-        to: recipients.join(', '),
+    const { data, error } = await resend.emails.send({
+        from: 'eses3D <onboarding@resend.dev>',
+        to: recipients,
         subject: `🔔 Yeni Talep: ${request.requestId} — ${fullName || 'Müşteri'}`,
         html
-    };
+    });
 
-    try {
-        await transporter.sendMail(mailOptions);
-        console.log(`Bildirim e-postası gönderildi: ${request.requestId} → ${recipients.join(', ')}`);
-    } catch (error) {
-        console.error('E-posta gönderim hatası:', error.message);
-        // E-posta hatası talep oluşturmayı engellemez
+    if (error) {
+        throw new Error(error.message || JSON.stringify(error));
     }
+
+    console.log(`[EMAIL] Resend ile gönderildi: ${request.requestId} → ${recipients.join(', ')} (id: ${data?.id})`);
 };
