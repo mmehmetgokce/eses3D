@@ -11,7 +11,7 @@ export const getProducts = async (req, res) => {
         let query = { isActive: true };
 
         if (category) {
-            query.category = category;
+            query.categories = category;
         }
 
         if (search) {
@@ -22,7 +22,7 @@ export const getProducts = async (req, res) => {
         }
 
         const products = await Product.find(query)
-            .populate('category', 'name slug')
+            .populate('categories', 'name slug')
             .sort({ order: 1, createdAt: -1 });
 
         res.json({
@@ -45,7 +45,7 @@ export const getProducts = async (req, res) => {
 export const getProductById = async (req, res) => {
     try {
         const product = await Product.findById(req.params.id)
-            .populate('category', 'name slug');
+            .populate('categories', 'name slug');
 
         if (!product || !product.isActive) {
             return res.status(404).json({
@@ -74,13 +74,13 @@ export const getProductsByCategory = async (req, res) => {
     try {
         const products = await Product.find({ isActive: true })
             .populate({
-                path: 'category',
+                path: 'categories',
                 match: { slug: req.params.slug, isActive: true }
             })
             .sort({ order: 1, createdAt: -1 });
 
-        // Kategori eşleşmeyenleri filtrele
-        const filteredProducts = products.filter(p => p.category !== null);
+        // categories dizi içindeki eşleşenleri filtrele
+        const filteredProducts = products.filter(p => p.categories && p.categories.length > 0);
 
         res.json({
             success: true,
@@ -101,18 +101,21 @@ export const getProductsByCategory = async (req, res) => {
 // @access  Private/Admin
 export const createProduct = async (req, res) => {
     try {
-        const { name, description, category, standardSize, order } = req.body;
+        const { name, description, categories, standardSize, order, price, colorCount, colorSlots } = req.body;
 
         const product = await Product.create({
             name,
             description,
-            category,
+            categories: Array.isArray(categories) ? categories : (categories ? [categories] : []),
             standardSize,
             order,
+            price,
+            colorCount,
+            colorSlots,
             images: []
         });
 
-        await product.populate('category', 'name slug');
+        await product.populate('categories', 'name slug');
 
         res.status(201).json({
             success: true,
@@ -136,7 +139,7 @@ export const updateProduct = async (req, res) => {
             req.params.id,
             req.body,
             { new: true, runValidators: true }
-        ).populate('category', 'name slug');
+        ).populate('categories', 'name slug');
 
         if (!product) {
             return res.status(404).json({

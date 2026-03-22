@@ -10,11 +10,10 @@ const productSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
-    category: {
+    categories: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Category',
-        required: [true, 'Kategori zorunludur']
-    },
+        ref: 'Category'
+    }],
     images: [{
         url: String,
         publicId: String
@@ -50,12 +49,11 @@ const productSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Kategori ile birlikte populate için virtual
+// Kategoriler ile birlikte populate için virtual
 productSchema.virtual('categoryDetails', {
     ref: 'Category',
-    localField: 'category',
-    foreignField: '_id',
-    justOne: true
+    localField: 'categories',
+    foreignField: '_id'
 });
 
 productSchema.set('toJSON', { virtuals: true });

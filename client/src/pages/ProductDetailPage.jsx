@@ -191,11 +191,15 @@ const ProductDetailPage = () => {
 
                     {/* Product Info */}
                     <div>
-                        {/* Category Badge */}
-                        {product.category && (
-                            <span className="inline-block bg-light-200 dark:bg-dark-700 text-light-700 dark:text-dark-300 text-sm px-3 py-1 rounded-full mb-4">
-                                {product.category.name}
-                            </span>
+                        {/* Category Badges */}
+                        {(product.categories?.length > 0 || product.category) && (
+                            <div className="flex flex-wrap gap-2 mb-4">
+                                {(product.categories || (product.category ? [product.category] : [])).map((cat, i) => (
+                                    <span key={i} className="inline-block bg-light-200 dark:bg-dark-700 text-light-700 dark:text-dark-300 text-sm px-3 py-1 rounded-full">
+                                        {cat.name}
+                                    </span>
+                                ))}
+                            </div>
                         )}
 
                         <h1 className="text-3xl md:text-4xl font-bold mb-4 text-light-900 dark:text-white">{product.name}</h1>

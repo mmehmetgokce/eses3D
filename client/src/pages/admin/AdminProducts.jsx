@@ -22,7 +22,7 @@ const AdminProducts = () => {
     const [formData, setFormData] = useState({
         name: '',
         description: '',
-        category: '',
+        categories: [],
         standardSize: '',
         price: '',
         colorCount: 0,
@@ -57,7 +57,7 @@ const AdminProducts = () => {
             setFormData({
                 name: product.name,
                 description: product.description,
-                category: product.category?._id || '',
+                categories: product.categories?.map(c => c._id || c) || (product.category ? [product.category._id || product.category] : []),
                 standardSize: product.standardSize || '',
                 price: product.price != null ? product.price : '',
                 colorCount: product.colorCount || 0,
@@ -69,7 +69,7 @@ const AdminProducts = () => {
             setFormData({
                 name: '',
                 description: '',
-                category: categories[0]?._id || '',
+                categories: [],
                 standardSize: '',
                 price: '',
                 colorCount: 0,
@@ -87,8 +87,8 @@ const AdminProducts = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!formData.name.trim() || !formData.category) {
-            toast.error('Ad ve kategori gereklidir!');
+        if (!formData.name.trim() || formData.categories.length === 0) {
+            toast.error('Ad ve en az bir kategori gereklidir!');
             return;
         }
 
@@ -223,7 +223,7 @@ const AdminProducts = () => {
                                 <div className="flex items-start justify-between">
                                     <div className="flex-1 min-w-0">
                                         <h3 className="font-semibold truncate text-light-900 dark:text-white">{product.name}</h3>
-                                        <p className="text-light-500 dark:text-dark-400 text-sm truncate">{product.category?.name}</p>
+                                        <p className="text-light-500 dark:text-dark-400 text-sm truncate">{product.categories?.map(c => c.name).join(', ') || product.category?.name}</p>
                                     </div>
                                     <div className="flex items-center space-x-1 ml-2">
                                         <button
@@ -282,18 +282,29 @@ const AdminProducts = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium mb-2 text-light-800 dark:text-white">Kategori *</label>
-                                    <select
-                                        value={formData.category}
-                                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                        className="input"
-                                        required
-                                    >
-                                        <option value="">Kategori seçin</option>
+                                    <label className="block text-sm font-medium mb-2 text-light-800 dark:text-white">Kategoriler *</label>
+                                    <div className="grid grid-cols-2 gap-2 p-3 bg-light-100 dark:bg-dark-700 rounded-lg max-h-40 overflow-y-auto">
                                         {categories.map((cat) => (
-                                            <option key={cat._id} value={cat._id}>{cat.name}</option>
+                                            <label key={cat._id} className="flex items-center gap-2 cursor-pointer p-1.5 rounded hover:bg-light-200 dark:hover:bg-dark-600 transition-colors">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formData.categories.includes(cat._id)}
+                                                    onChange={(e) => {
+                                                        if (e.target.checked) {
+                                                            setFormData({ ...formData, categories: [...formData.categories, cat._id] });
+                                                        } else {
+                                                            setFormData({ ...formData, categories: formData.categories.filter(id => id !== cat._id) });
+                                                        }
+                                                    }}
+                                                    className="w-4 h-4 rounded border-light-400 dark:border-dark-500 text-primary-500 focus:ring-primary-500"
+                                                />
+                                                <span className="text-sm text-light-800 dark:text-dark-200">{cat.name}</span>
+                                            </label>
                                         ))}
-                                    </select>
+                                    </div>
+                                    {formData.categories.length === 0 && (
+                                        <p className="text-xs text-red-500 mt-1">En az bir kategori seçin</p>
+                                    )}
                                 </div>
                             </div>
 
