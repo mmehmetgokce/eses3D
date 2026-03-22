@@ -1,5 +1,7 @@
 import Request from '../models/Request.js';
-import { sendNewRequestNotification } from '../services/emailService.js';
+// import { sendNewRequestNotification } from '../services/emailService.js';
+// NOT: Gmail SMTP, Render'ın paylaşımlı IP'lerinden gönderilen e-postaları
+// teslim etmiyor. Resend gibi API tabanlı servise geçildiğinde aktif edilecek.
 
 // @desc    Yeni talep oluştur
 // @route   POST /api/requests
@@ -43,10 +45,10 @@ export const createRequest = async (req, res) => {
             message: 'Talebiniz başarıyla oluşturuldu!'
         });
 
-        // E-posta bildirimini arka planda gönder (response beklemez)
-        sendNewRequestNotification(request)
-            .then(() => console.log(`[EMAIL] Gönderildi: ${requestId}`))
-            .catch(err => console.error(`[EMAIL] HATA (${requestId}):`, err.message));
+        // E-posta bildirimi (şimdilik devre dışı - Render IP engeli)
+        // sendNewRequestNotification(request)
+        //     .then(() => console.log(`[EMAIL] Gönderildi: ${requestId}`))
+        //     .catch(err => console.error(`[EMAIL] HATA (${requestId}):`, err.message));
     } catch (error) {
         res.status(500).json({
             success: false,
