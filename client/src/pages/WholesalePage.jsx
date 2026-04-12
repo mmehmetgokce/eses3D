@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Package, Minus, Plus, Trash2, ShoppingBag, Gift, TrendingUp, X } from 'lucide-react';
 import { useWholesale, TIERS } from '../context/WholesaleContext';
-import { getProducts, getCategories, createRequest } from '../services/api';
+import { getProducts, getCategories } from '../services/api';
+import { createRequest } from '../services/api';
+import { getColorHex } from '../components/ColorCircle';
 import ColorCircle from '../components/ColorCircle';
 import Loading from '../components/Loading';
 import SEO from '../components/SEO';
@@ -17,6 +19,7 @@ const WholesalePage = () => {
     } = useWholesale();
 
     const [products, setProducts] = useState([]);
+    const [allProducts, setAllProducts] = useState([]); // stand fotoğrafları için
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedCategory, setSelectedCategory] = useState('');
@@ -38,11 +41,13 @@ const WholesalePage = () => {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const [productsRes, categoriesRes] = await Promise.all([
+            const [productsRes, allProductsRes, categoriesRes] = await Promise.all([
                 getProducts({ wholesale: true }),
+                getProducts(), // tüm ürünler (stand fotoğrafları için)
                 getCategories()
             ]);
             setProducts(productsRes.data.data);
+            setAllProducts(allProductsRes.data.data);
             setCategories(categoriesRes.data.data);
         } catch (error) {
             console.error('Veri yüklenirken hata:', error);
@@ -60,6 +65,12 @@ const WholesalePage = () => {
     const filteredProducts = selectedCategory
         ? products.filter(p => p.categories?.some(c => (c._id || c) === selectedCategory))
         : products;
+
+    // Stand fotoğrafları (ürün adında 'Tek Katlı' veya 'Çift Katlı' aranır)
+    const singleStandProduct = allProducts.find(p => p.name?.toLowerCase().includes('tek katlı') && p.name?.toLowerCase().includes('stand'));
+    const doubleStandProduct = allProducts.find(p => p.name?.toLowerCase().includes('çift katlı') && p.name?.toLowerCase().includes('stand'));
+    const singleStandImage = singleStandProduct?.images?.[0]?.url;
+    const doubleStandImage = doubleStandProduct?.images?.[0]?.url;
 
     // Renk modalını aç
     const openColorModal = (product) => {
@@ -229,17 +240,27 @@ const WholesalePage = () => {
                     {/* Stand bilgisi */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
                         <div className="flex items-center gap-3 bg-green-500/5 border border-green-500/20 rounded-lg p-3">
-                            <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center text-xl">🏗️</div>
+                            {singleStandImage ? (
+                                <img src={singleStandImage} alt="Tek Katlı Stand" className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
+                            ) : (
+                                <div className="w-14 h-14 bg-green-500/10 rounded-lg flex items-center justify-center text-xl flex-shrink-0">🏗️</div>
+                            )}
                             <div>
                                 <p className="text-sm font-semibold text-green-700 dark:text-green-400">50 - 70 Adet</p>
                                 <p className="text-xs text-green-600 dark:text-green-500">Tek Katlı Stand Hediye!</p>
+                                <p className="text-xs mt-0.5"><span className="text-red-400 line-through">200 ₺</span> <span className="text-green-600 dark:text-green-400 font-bold">Ücretsiz</span></p>
                             </div>
                         </div>
                         <div className="flex items-center gap-3 bg-amber-500/5 border border-amber-500/20 rounded-lg p-3">
-                            <div className="w-10 h-10 bg-amber-500/10 rounded-lg flex items-center justify-center text-xl">🏗️🏗️</div>
+                            {doubleStandImage ? (
+                                <img src={doubleStandImage} alt="Çift Katlı Stand" className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
+                            ) : (
+                                <div className="w-14 h-14 bg-amber-500/10 rounded-lg flex items-center justify-center text-xl flex-shrink-0">🏗️🏗️</div>
+                            )}
                             <div>
                                 <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">80 - 100+ Adet</p>
                                 <p className="text-xs text-amber-600 dark:text-amber-500">Çift Katlı Stand Hediye!</p>
+                                <p className="text-xs mt-0.5"><span className="text-red-400 line-through">400 ₺</span> <span className="text-amber-600 dark:text-amber-400 font-bold">Ücretsiz</span></p>
                             </div>
                         </div>
                     </div>
@@ -461,8 +482,15 @@ const WholesalePage = () => {
                                         {/* Hediye Stand */}
                                         {currentStand && (
                                             <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 mb-4">
-                                                <div className="flex items-center gap-2">
-                                                    <Gift className="w-5 h-5 text-green-500 flex-shrink-0" />
+                                                <div className="flex items-center gap-3">
+                                                    {(() => {
+                                                        const standImg = totalItems >= 80 ? doubleStandImage : singleStandImage;
+                                                        return standImg ? (
+                                                            <img src={standImg} alt={currentStand.label} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                                                        ) : (
+                                                            <Gift className="w-5 h-5 text-green-500 flex-shrink-0" />
+                                                        );
+                                                    })()}
                                                     <div>
                                                         <span className="text-sm text-green-700 dark:text-green-400 font-medium">
                                                             🎁 {currentStand.label}
@@ -577,23 +605,28 @@ const WholesalePage = () => {
                                             <label className="text-sm font-medium text-light-800 dark:text-dark-200 mb-2 block">
                                                 {slot.label || `Renk ${slotIdx + 1}`}
                                             </label>
-                                            <div className="flex flex-wrap gap-2">
-                                                {slot.allowedColors.map(color => (
-                                                    <button
-                                                        key={color}
-                                                        onClick={() => handleModalColorSelect(slotIdx, color)}
-                                                        className={`relative rounded-full p-0.5 transition-all ${
-                                                            slot.color === color
-                                                                ? 'ring-2 ring-primary-500 ring-offset-2 dark:ring-offset-dark-800'
-                                                                : 'hover:scale-110'
-                                                        }`}
-                                                    >
-                                                        <ColorCircle colors={[color]} size={32} />
-                                                    </button>
-                                                ))}
+                                            <div className="flex flex-wrap gap-3">
+                                                {slot.allowedColors.map(color => {
+                                                    const hex = getColorHex(color);
+                                                    const isSelected = slot.color === color;
+                                                    return (
+                                                        <button
+                                                            key={color}
+                                                            type="button"
+                                                            onClick={() => handleModalColorSelect(slotIdx, color)}
+                                                            className={`w-10 h-10 rounded-full border-2 transition-all flex-shrink-0 ${
+                                                                isSelected
+                                                                    ? 'border-primary-500 ring-2 ring-primary-500 ring-offset-2 dark:ring-offset-dark-800 scale-110'
+                                                                    : 'border-light-300 dark:border-dark-500 hover:scale-110 hover:border-primary-400'
+                                                            }`}
+                                                            style={{ backgroundColor: hex }}
+                                                            title={color}
+                                                        />
+                                                    );
+                                                })}
                                             </div>
                                             {slot.color && (
-                                                <p className="text-xs text-primary-500 mt-1">Seçili: {slot.color}</p>
+                                                <p className="text-xs text-primary-500 mt-1.5 font-medium">✓ Seçili: {slot.color}</p>
                                             )}
                                         </div>
                                     ))}
