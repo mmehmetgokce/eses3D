@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Package, Minus, Plus, Trash2, ShoppingBag, Gift, TrendingUp, AlertTriangle, X, ChevronDown } from 'lucide-react';
+import { Package, Minus, Plus, Trash2, ShoppingBag, Gift, TrendingUp, X } from 'lucide-react';
 import { useWholesale, TIERS } from '../context/WholesaleContext';
 import { getProducts, getCategories, createRequest } from '../services/api';
+import ColorCircle from '../components/ColorCircle';
 import Loading from '../components/Loading';
 import SEO from '../components/SEO';
 import toast from 'react-hot-toast';
@@ -12,32 +13,27 @@ const WholesalePage = () => {
     const {
         items, addItem, removeItem, updateQuantity, clearList,
         totalItems, currentTier, nextTier, discountPercent,
-        lockedCategoryId, calculateTotal
+        currentStand, calculateTotal
     } = useWholesale();
 
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedCategory, setSelectedCategory] = useState('');
-    const [showOrderForm, setShowOrderForm] = useState(false);
     const [customerName, setCustomerName] = useState('');
     const [customerSurname, setCustomerSurname] = useState('');
     const [customerPhone, setCustomerPhone] = useState('');
     const [generalNote, setGeneralNote] = useState('');
     const [submitting, setSubmitting] = useState(false);
-    const [categoryLockMessage, setCategoryLockMessage] = useState('');
+
+    // Renk Seçim Modalı
+    const [colorModal, setColorModal] = useState(null); // { product, selectedColors, qty }
+    const [modalColors, setModalColors] = useState([]);
+    const [modalQty, setModalQty] = useState(10);
 
     useEffect(() => {
         fetchData();
     }, []);
-
-    // Kategori kilidi mesajını zamanlayıcıyla gizle
-    useEffect(() => {
-        if (categoryLockMessage) {
-            const timer = setTimeout(() => setCategoryLockMessage(''), 3000);
-            return () => clearTimeout(timer);
-        }
-    }, [categoryLockMessage]);
 
     const fetchData = async () => {
         try {
@@ -65,25 +61,55 @@ const WholesalePage = () => {
         ? products.filter(p => p.categories?.some(c => (c._id || c) === selectedCategory))
         : products;
 
-    // Kategori kilidini kontrol et
-    const isCategoryLocked = (categoryId) => {
-        return lockedCategoryId && lockedCategoryId !== categoryId;
+    // Renk modalını aç
+    const openColorModal = (product) => {
+        const slots = product.colorSlots || [];
+        const initialColors = slots.map(slot => ({
+            label: slot.label || '',
+            color: '',
+            allowedColors: slot.allowedColors || []
+        }));
+        setColorModal(product);
+        setModalColors(initialColors);
+        setModalQty(10);
     };
 
-    const handleAddItem = (product) => {
-        const productCategoryId = product.categories?.[0]?._id || product.categories?.[0];
-        if (!productCategoryId) return;
+    const closeColorModal = () => {
+        setColorModal(null);
+        setModalColors([]);
+        setModalQty(10);
+    };
 
-        const success = addItem(product, productCategoryId);
-        if (!success) {
-            const lockedCatName = categories.find(c => c._id === lockedCategoryId)?.name || 'seçili kategori';
-            setCategoryLockMessage(`Toptan siparişte yalnızca "${lockedCatName}" kategorisinden ürün ekleyebilirsiniz. Farklı bir kategori seçmek için mevcut sepeti temizleyin.`);
+    const handleModalColorSelect = (slotIndex, color) => {
+        setModalColors(prev => prev.map((s, i) =>
+            i === slotIndex ? { ...s, color } : s
+        ));
+    };
+
+    const handleModalAdd = () => {
+        if (!colorModal) return;
+        const hasSlots = colorModal.colorSlots?.length > 0;
+
+        if (hasSlots) {
+            const allSelected = modalColors.every(s => s.color !== '');
+            if (!allSelected) {
+                toast.error('Tüm renk seçeneklerini belirleyin!');
+                return;
+            }
         }
-    };
 
-    const getItemQty = (productId) => {
-        const item = items.find(i => i.productId === productId);
-        return item ? item.quantity : 0;
+        if (modalQty < 1) {
+            toast.error('En az 1 adet girin!');
+            return;
+        }
+
+        const selectedColors = hasSlots
+            ? modalColors.map(s => ({ label: s.label, color: s.color }))
+            : [];
+
+        addItem(colorModal, modalQty, selectedColors);
+        toast.success(`${modalQty} adet ${colorModal.name} sepete eklendi!`);
+        closeColorModal();
     };
 
     // Telefon formatı
@@ -114,23 +140,24 @@ const WholesalePage = () => {
 
         try {
             setSubmitting(true);
-            const { subtotal, discount, total } = calculateTotal();
 
             const requestItems = items.map(item => ({
                 product: item.productId,
                 productName: item.productName,
                 quantity: item.quantity,
                 unitPrice: Math.round(item.price * (1 - discountPercent / 100) * 100) / 100,
-                selectedColors: [],
+                selectedColors: item.selectedColors || [],
                 note: ''
             }));
+
+            const standLabel = currentStand ? currentStand.label : '';
 
             const response = await createRequest({
                 customerName: customerName.trim(),
                 customerSurname: customerSurname.trim(),
                 customerPhone: `90${cleanPhone}`,
                 items: requestItems,
-                generalNote: `[TOPTAN SİPARİŞ] İndirim: %${discountPercent} | Toplam Adet: ${totalItems} | Hediye Stand Dahil${generalNote ? '\n\nNot: ' + generalNote : ''}`,
+                generalNote: `[TOPTAN SİPARİŞ] İndirim: %${discountPercent} | Toplam Adet: ${totalItems} | ${standLabel} Hediye${generalNote ? '\n\nNot: ' + generalNote : ''}`,
                 isWholesale: true,
                 discountPercent
             });
@@ -199,24 +226,24 @@ const WholesalePage = () => {
                             </div>
                         ))}
                     </div>
-                    <div className="flex items-center gap-2 mt-3 text-sm text-green-600 dark:text-green-400">
-                        <Gift className="w-4 h-4" />
-                        <span>Tüm toptan siparişlere hediye anahtarlık standı dahildir!</span>
+                    {/* Stand bilgisi */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                        <div className="flex items-center gap-3 bg-green-500/5 border border-green-500/20 rounded-lg p-3">
+                            <div className="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center text-xl">🏗️</div>
+                            <div>
+                                <p className="text-sm font-semibold text-green-700 dark:text-green-400">50 - 70 Adet</p>
+                                <p className="text-xs text-green-600 dark:text-green-500">Tek Katlı Stand Hediye!</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3 bg-amber-500/5 border border-amber-500/20 rounded-lg p-3">
+                            <div className="w-10 h-10 bg-amber-500/10 rounded-lg flex items-center justify-center text-xl">🏗️🏗️</div>
+                            <div>
+                                <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">80 - 100+ Adet</p>
+                                <p className="text-xs text-amber-600 dark:text-amber-500">Çift Katlı Stand Hediye!</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-
-                {/* Kategori Lock Uyarısı */}
-                {categoryLockMessage && (
-                    <div className="mb-4 bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400 rounded-lg p-4 flex items-start gap-3 animate-fade-in">
-                        <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                        <div className="flex-1">
-                            <p className="text-sm">{categoryLockMessage}</p>
-                        </div>
-                        <button onClick={() => setCategoryLockMessage('')} className="flex-shrink-0">
-                            <X className="w-4 h-4" />
-                        </button>
-                    </div>
-                )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Sol: Ürün Listesi */}
@@ -238,17 +265,13 @@ const WholesalePage = () => {
                                     <button
                                         key={cat._id}
                                         onClick={() => setSelectedCategory(cat._id)}
-                                        disabled={isCategoryLocked(cat._id)}
                                         className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                                             selectedCategory === cat._id
                                                 ? 'bg-primary-500 text-white'
-                                                : isCategoryLocked(cat._id)
-                                                    ? 'bg-light-100 dark:bg-dark-700 text-light-400 dark:text-dark-500 cursor-not-allowed opacity-50'
-                                                    : 'bg-light-100 dark:bg-dark-700 text-light-700 dark:text-dark-300 hover:bg-light-200 dark:hover:bg-dark-600'
+                                                : 'bg-light-100 dark:bg-dark-700 text-light-700 dark:text-dark-300 hover:bg-light-200 dark:hover:bg-dark-600'
                                         }`}
                                     >
                                         {cat.name}
-                                        {isCategoryLocked(cat._id) && ' 🔒'}
                                     </button>
                                 ))}
                             </div>
@@ -263,21 +286,20 @@ const WholesalePage = () => {
                         ) : (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {filteredProducts.map(product => {
-                                    const qty = getItemQty(product._id);
-                                    const productCatId = product.categories?.[0]?._id || product.categories?.[0];
-                                    const locked = isCategoryLocked(productCatId);
                                     const unitPrice = product.price || 0;
                                     const discountedPrice = Math.round(unitPrice * (1 - discountPercent / 100) * 100) / 100;
+                                    // Bu üründen sepetteki toplam adet
+                                    const productTotalQty = items
+                                        .filter(i => i.productId === product._id)
+                                        .reduce((sum, i) => sum + i.quantity, 0);
 
                                     return (
                                         <div
                                             key={product._id}
                                             className={`bg-white dark:bg-dark-800 border rounded-xl overflow-hidden transition-all ${
-                                                locked
-                                                    ? 'border-light-200 dark:border-dark-700 opacity-50'
-                                                    : qty > 0
-                                                        ? 'border-primary-500 shadow-md shadow-primary-500/10'
-                                                        : 'border-light-200 dark:border-dark-700 hover:border-light-300 dark:hover:border-dark-600'
+                                                productTotalQty > 0
+                                                    ? 'border-primary-500 shadow-md shadow-primary-500/10'
+                                                    : 'border-light-200 dark:border-dark-700 hover:border-light-300 dark:hover:border-dark-600'
                                             }`}
                                         >
                                             <div className="flex">
@@ -311,44 +333,18 @@ const WholesalePage = () => {
                                                                 </span>
                                                             )}
                                                         </div>
-                                                    </div>
-                                                    {/* Adet Kontrolü */}
-                                                    <div className="flex items-center gap-2 mt-2">
-                                                        {qty > 0 ? (
-                                                            <div className="flex items-center gap-1">
-                                                                <button
-                                                                    onClick={() => updateQuantity(product._id, qty - 1)}
-                                                                    className="w-7 h-7 rounded-md bg-light-100 dark:bg-dark-700 flex items-center justify-center hover:bg-light-200 dark:hover:bg-dark-600 transition-colors"
-                                                                >
-                                                                    <Minus className="w-3.5 h-3.5" />
-                                                                </button>
-                                                                <input
-                                                                    type="number"
-                                                                    value={qty}
-                                                                    onChange={(e) => {
-                                                                        const val = parseInt(e.target.value) || 0;
-                                                                        if (val > 0) updateQuantity(product._id, val);
-                                                                        else removeItem(product._id);
-                                                                    }}
-                                                                    className="w-12 h-7 text-center text-sm font-semibold bg-light-100 dark:bg-dark-700 rounded-md border-0 text-light-900 dark:text-white"
-                                                                    min="0"
-                                                                />
-                                                                <button
-                                                                    onClick={() => updateQuantity(product._id, qty + 1)}
-                                                                    className="w-7 h-7 rounded-md bg-primary-500 text-white flex items-center justify-center hover:bg-primary-600 transition-colors"
-                                                                >
-                                                                    <Plus className="w-3.5 h-3.5" />
-                                                                </button>
-                                                            </div>
-                                                        ) : (
-                                                            <button
-                                                                onClick={() => handleAddItem(product)}
-                                                                disabled={locked}
-                                                                className="px-3 py-1.5 text-xs font-medium rounded-lg bg-primary-500 text-white hover:bg-primary-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                                                            >
-                                                                Ekle
-                                                            </button>
+                                                        {productTotalQty > 0 && (
+                                                            <p className="text-xs text-primary-500 mt-1">Sepette: {productTotalQty} adet</p>
                                                         )}
+                                                    </div>
+                                                    {/* Ekle Butonu */}
+                                                    <div className="mt-2">
+                                                        <button
+                                                            onClick={() => openColorModal(product)}
+                                                            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-primary-500 text-white hover:bg-primary-600 transition-colors"
+                                                        >
+                                                            {product.colorSlots?.length > 0 ? 'Renk Seç & Ekle' : 'Sepete Ekle'}
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -361,7 +357,7 @@ const WholesalePage = () => {
 
                     {/* Sağ: Sipariş Özeti */}
                     <div className="lg:col-span-1">
-                        <div className="sticky top-4 space-y-4">
+                        <div className="sticky top-24 space-y-4">
                             <div className="bg-white dark:bg-dark-800 border border-light-200 dark:border-dark-700 rounded-xl p-5">
                                 <h3 className="font-semibold text-light-900 dark:text-white mb-4 flex items-center gap-2">
                                     <ShoppingBag className="w-5 h-5" />
@@ -377,22 +373,43 @@ const WholesalePage = () => {
                                         {/* Seçilen Ürünler */}
                                         <div className="space-y-2 mb-4 max-h-60 overflow-y-auto">
                                             {items.map(item => (
-                                                <div key={item.productId} className="flex items-center justify-between text-sm py-2 border-b border-light-100 dark:border-dark-700 last:border-0">
+                                                <div key={item._itemKey} className="flex items-center justify-between text-sm py-2 border-b border-light-100 dark:border-dark-700 last:border-0">
                                                     <div className="flex-1 min-w-0">
                                                         <p className="font-medium text-light-900 dark:text-white truncate">{item.productName}</p>
-                                                        <p className="text-xs text-light-500 dark:text-dark-400">{item.quantity} adet</p>
+                                                        {item.selectedColors?.length > 0 && (
+                                                            <div className="flex items-center gap-1 mt-0.5">
+                                                                {item.selectedColors.map((c, idx) => (
+                                                                    <ColorCircle key={idx} colors={[c.color]} size={14} />
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                        <div className="flex items-center gap-1.5 mt-1">
+                                                            <button
+                                                                onClick={() => updateQuantity(item._itemKey, item.quantity - 1)}
+                                                                className="w-5 h-5 rounded bg-light-200 dark:bg-dark-600 flex items-center justify-center hover:bg-light-300 dark:hover:bg-dark-500 transition-colors"
+                                                            >
+                                                                <Minus className="w-3 h-3" />
+                                                            </button>
+                                                            <span className="text-xs font-semibold w-6 text-center">{item.quantity}</span>
+                                                            <button
+                                                                onClick={() => updateQuantity(item._itemKey, item.quantity + 1)}
+                                                                className="w-5 h-5 rounded bg-primary-500 text-white flex items-center justify-center hover:bg-primary-600 transition-colors"
+                                                            >
+                                                                <Plus className="w-3 h-3" />
+                                                            </button>
+                                                        </div>
                                                     </div>
-                                                    <div className="text-right ml-2">
-                                                        <p className="font-semibold text-light-900 dark:text-white">
+                                                    <div className="text-right ml-2 flex items-center gap-1.5">
+                                                        <p className="font-semibold text-light-900 dark:text-white text-xs">
                                                             {(item.price * item.quantity * (1 - discountPercent / 100)).toLocaleString('tr-TR', { maximumFractionDigits: 0 })} ₺
                                                         </p>
+                                                        <button
+                                                            onClick={() => removeItem(item._itemKey)}
+                                                            className="text-red-400 hover:text-red-500 transition-colors"
+                                                        >
+                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                        </button>
                                                     </div>
-                                                    <button
-                                                        onClick={() => removeItem(item.productId)}
-                                                        className="ml-2 text-red-400 hover:text-red-500 transition-colors"
-                                                    >
-                                                        <Trash2 className="w-3.5 h-3.5" />
-                                                    </button>
                                                 </div>
                                             ))}
                                         </div>
@@ -442,12 +459,20 @@ const WholesalePage = () => {
                                         </div>
 
                                         {/* Hediye Stand */}
-                                        {totalItems >= 50 && (
-                                            <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 mb-4 flex items-center gap-2">
-                                                <Gift className="w-5 h-5 text-green-500 flex-shrink-0" />
-                                                <span className="text-sm text-green-700 dark:text-green-400 font-medium">
-                                                    🎁 Hediye Anahtarlık Standı dahil!
-                                                </span>
+                                        {currentStand && (
+                                            <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 mb-4">
+                                                <div className="flex items-center gap-2">
+                                                    <Gift className="w-5 h-5 text-green-500 flex-shrink-0" />
+                                                    <div>
+                                                        <span className="text-sm text-green-700 dark:text-green-400 font-medium">
+                                                            🎁 {currentStand.label}
+                                                        </span>
+                                                        <div className="flex items-center gap-2 mt-0.5">
+                                                            <span className="text-sm text-red-400 line-through font-semibold">{currentStand.price} ₺</span>
+                                                            <span className="text-sm text-green-600 dark:text-green-400 font-bold">Ücretsiz!</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         )}
 
@@ -509,6 +534,128 @@ const WholesalePage = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Renk Seçim Modalı */}
+            {colorModal && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeColorModal}>
+                    <div
+                        className="bg-white dark:bg-dark-800 border border-light-200 dark:border-dark-700 rounded-2xl w-full max-w-md shadow-2xl animate-fade-in"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between p-5 border-b border-light-200 dark:border-dark-700">
+                            <div className="flex items-center gap-3">
+                                <img
+                                    src={colorModal.images?.[0]?.url || '/placeholder.jpg'}
+                                    alt={colorModal.name}
+                                    className="w-12 h-12 rounded-lg object-cover"
+                                />
+                                <div>
+                                    <h3 className="font-semibold text-light-900 dark:text-white">{colorModal.name}</h3>
+                                    <p className="text-xs text-light-500 dark:text-dark-400">
+                                        {discountPercent > 0 && (
+                                            <><span className="line-through">{colorModal.price?.toLocaleString('tr-TR')} ₺</span> → </>
+                                        )}
+                                        <span className="text-green-600 dark:text-green-400 font-semibold">
+                                            {Math.round((colorModal.price || 0) * (1 - discountPercent / 100) * 100 / 100).toLocaleString('tr-TR')} ₺/adet
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                            <button onClick={closeColorModal} className="p-2 hover:bg-light-100 dark:hover:bg-dark-700 rounded-lg transition-colors">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="p-5 space-y-4 max-h-[60vh] overflow-y-auto">
+                            {/* Renk Seçimi */}
+                            {colorModal.colorSlots?.length > 0 && (
+                                <div className="space-y-3">
+                                    {modalColors.map((slot, slotIdx) => (
+                                        <div key={slotIdx}>
+                                            <label className="text-sm font-medium text-light-800 dark:text-dark-200 mb-2 block">
+                                                {slot.label || `Renk ${slotIdx + 1}`}
+                                            </label>
+                                            <div className="flex flex-wrap gap-2">
+                                                {slot.allowedColors.map(color => (
+                                                    <button
+                                                        key={color}
+                                                        onClick={() => handleModalColorSelect(slotIdx, color)}
+                                                        className={`relative rounded-full p-0.5 transition-all ${
+                                                            slot.color === color
+                                                                ? 'ring-2 ring-primary-500 ring-offset-2 dark:ring-offset-dark-800'
+                                                                : 'hover:scale-110'
+                                                        }`}
+                                                    >
+                                                        <ColorCircle colors={[color]} size={32} />
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            {slot.color && (
+                                                <p className="text-xs text-primary-500 mt-1">Seçili: {slot.color}</p>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Adet */}
+                            <div>
+                                <label className="text-sm font-medium text-light-800 dark:text-dark-200 mb-2 block">
+                                    Adet
+                                </label>
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={() => setModalQty(Math.max(1, modalQty - 5))}
+                                        className="w-9 h-9 rounded-lg bg-light-100 dark:bg-dark-700 flex items-center justify-center hover:bg-light-200 dark:hover:bg-dark-600 transition-colors"
+                                    >
+                                        <Minus className="w-4 h-4" />
+                                    </button>
+                                    <input
+                                        type="number"
+                                        value={modalQty}
+                                        onChange={(e) => setModalQty(Math.max(1, parseInt(e.target.value) || 1))}
+                                        className="w-20 h-9 text-center font-semibold bg-light-100 dark:bg-dark-700 rounded-lg border-0 text-light-900 dark:text-white"
+                                        min="1"
+                                    />
+                                    <button
+                                        onClick={() => setModalQty(modalQty + 5)}
+                                        className="w-9 h-9 rounded-lg bg-primary-500 text-white flex items-center justify-center hover:bg-primary-600 transition-colors"
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                    </button>
+                                </div>
+                                <div className="flex gap-2 mt-2">
+                                    {[5, 10, 20, 50].map(q => (
+                                        <button
+                                            key={q}
+                                            onClick={() => setModalQty(q)}
+                                            className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                                                modalQty === q
+                                                    ? 'bg-primary-500 text-white'
+                                                    : 'bg-light-100 dark:bg-dark-700 text-light-600 dark:text-dark-300 hover:bg-light-200 dark:hover:bg-dark-600'
+                                            }`}
+                                        >
+                                            {q}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="p-5 border-t border-light-200 dark:border-dark-700">
+                            <button
+                                onClick={handleModalAdd}
+                                className="w-full btn btn-primary py-3 font-semibold"
+                            >
+                                {modalQty} Adet Sepete Ekle
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

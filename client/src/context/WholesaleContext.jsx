@@ -12,13 +12,25 @@ export const useWholesale = () => {
 
 // Kademe tablosu
 const TIERS = [
-    { min: 50, discount: 7.5 },
-    { min: 60, discount: 15 },
-    { min: 70, discount: 22.5 },
-    { min: 80, discount: 30 },
-    { min: 90, discount: 37.5 },
-    { min: 100, discount: 45 }
+    { min: 50, discount: 20 },
+    { min: 60, discount: 25 },
+    { min: 70, discount: 30 },
+    { min: 80, discount: 35 },
+    { min: 90, discount: 40 },
+    { min: 100, discount: 50 }
 ];
+
+// Stand bilgileri
+const STANDS = {
+    single: { label: 'Tek Katlı Anahtarlık Standı', price: 200, minQty: 50 },
+    double: { label: 'Çift Katlı Anahtarlık Standı', price: 400, minQty: 80 }
+};
+
+export const getStandType = (totalQty) => {
+    if (totalQty >= 80) return STANDS.double;
+    if (totalQty >= 50) return STANDS.single;
+    return null;
+};
 
 export const getTier = (totalQty) => {
     for (let i = TIERS.length - 1; i >= 0; i--) {
@@ -34,92 +46,76 @@ export const getNextTier = (totalQty) => {
     return null;
 };
 
-export { TIERS };
+export { TIERS, STANDS };
+
+// Ürün + renk seçiminden benzersiz key oluştur
+const getItemKey = (productId, selectedColors = []) => {
+    if (selectedColors.length === 0) return `${productId}__no-color`;
+    const colorKey = selectedColors.map(c => `${c.label}:${c.color}`).sort().join('|');
+    return `${productId}__${colorKey}`;
+};
 
 export const WholesaleProvider = ({ children }) => {
     const [items, setItems] = useState(() => {
         const saved = localStorage.getItem('eses3d-wholesale-list');
         return saved ? JSON.parse(saved) : [];
     });
-    const [lockedCategoryId, setLockedCategoryId] = useState(() => {
-        const saved = localStorage.getItem('eses3d-wholesale-category');
-        return saved || null;
-    });
 
     useEffect(() => {
         localStorage.setItem('eses3d-wholesale-list', JSON.stringify(items));
-        if (items.length === 0) {
-            setLockedCategoryId(null);
-            localStorage.removeItem('eses3d-wholesale-category');
-        }
     }, [items]);
-
-    useEffect(() => {
-        if (lockedCategoryId) {
-            localStorage.setItem('eses3d-wholesale-category', lockedCategoryId);
-        }
-    }, [lockedCategoryId]);
 
     const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
     const currentTier = getTier(totalItems);
     const nextTier = getNextTier(totalItems);
     const discountPercent = currentTier ? currentTier.discount : 0;
+    const currentStand = getStandType(totalItems);
 
-    // Ürün ekle veya adedini artır
-    const addItem = (product, categoryId) => {
-        // Kategori kilidi
-        if (lockedCategoryId && lockedCategoryId !== categoryId) {
-            return false; // farklı kategori
-        }
+    // Ürün ekle (renk seçimli)
+    const addItem = (product, quantity = 1, selectedColors = []) => {
+        const key = getItemKey(product._id, selectedColors);
 
         setItems(prev => {
-            const existing = prev.findIndex(item => item.productId === product._id);
-            if (existing > -1) {
+            const existingIndex = prev.findIndex(item => item._itemKey === key);
+            if (existingIndex > -1) {
                 const updated = [...prev];
-                updated[existing].quantity += 1;
+                updated[existingIndex].quantity += quantity;
                 return updated;
             }
             return [...prev, {
+                _itemKey: key,
                 productId: product._id,
                 productName: product.name,
                 price: product.price || 0,
                 image: product.images?.[0]?.url || '',
-                quantity: 1
+                quantity,
+                selectedColors
             }];
         });
-
-        if (!lockedCategoryId) {
-            setLockedCategoryId(categoryId);
-        }
         return true;
     };
 
     // Adet güncelle
-    const updateQuantity = (productId, quantity) => {
+    const updateQuantity = (itemKey, quantity) => {
         if (quantity < 1) {
-            removeItem(productId);
+            removeItem(itemKey);
             return;
         }
         setItems(prev => prev.map(item =>
-            item.productId === productId
+            item._itemKey === itemKey
                 ? { ...item, quantity }
                 : item
         ));
     };
 
     // Ürün sil
-    const removeItem = (productId) => {
-        setItems(prev => {
-            const updated = prev.filter(item => item.productId !== productId);
-            return updated;
-        });
+    const removeItem = (itemKey) => {
+        setItems(prev => prev.filter(item => item._itemKey !== itemKey));
     };
 
     // Listeyi temizle
     const clearList = () => {
         setItems([]);
-        setLockedCategoryId(null);
-        localStorage.removeItem('eses3d-wholesale-category');
     };
 
     // Toplam fiyat (indirimli)
@@ -140,7 +136,7 @@ export const WholesaleProvider = ({ children }) => {
             currentTier,
             nextTier,
             discountPercent,
-            lockedCategoryId,
+            currentStand,
             calculateTotal
         }}>
             {children}
