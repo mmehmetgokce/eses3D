@@ -66,9 +66,9 @@ const WholesalePage = () => {
         ? products.filter(p => p.categories?.some(c => (c._id || c) === selectedCategory))
         : products;
 
-    // Stand fotoğrafları (ürün adında 'Tek Katlı' veya 'Çift Katlı' aranır)
-    const singleStandProduct = allProducts.find(p => p.name?.toLowerCase().includes('tek katlı') && p.name?.toLowerCase().includes('stand'));
-    const doubleStandProduct = allProducts.find(p => p.name?.toLowerCase().includes('çift katlı') && p.name?.toLowerCase().includes('stand'));
+    // Stand fotoğrafları (tam ürün adıyla eşleşir)
+    const singleStandProduct = allProducts.find(p => p.name === 'Tek Katlı Anahtarlık Standı');
+    const doubleStandProduct = allProducts.find(p => p.name === 'Çift Katlı Anahtarlık Standı');
     const singleStandImage = singleStandProduct?.images?.[0]?.url;
     const doubleStandImage = doubleStandProduct?.images?.[0]?.url;
 
