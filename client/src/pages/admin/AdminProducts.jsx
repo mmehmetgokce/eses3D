@@ -27,7 +27,8 @@ const AdminProducts = () => {
         price: '',
         colorCount: 0,
         colorSlots: [],
-        order: 0
+        order: 0,
+        wholesaleEnabled: false
     });
     const [saving, setSaving] = useState(false);
     const [uploadingImages, setUploadingImages] = useState(false);
@@ -62,7 +63,8 @@ const AdminProducts = () => {
                 price: product.price != null ? product.price : '',
                 colorCount: product.colorCount || 0,
                 colorSlots: product.colorSlots?.map(s => ({ label: s.label || '', allowedColors: [...(s.allowedColors || [])] })) || [],
-                order: product.order || 0
+                order: product.order || 0,
+                wholesaleEnabled: product.wholesaleEnabled || false
             });
         } else {
             setEditingProduct(null);
@@ -74,7 +76,8 @@ const AdminProducts = () => {
                 price: '',
                 colorCount: 0,
                 colorSlots: [],
-                order: 0
+                order: 0,
+                wholesaleEnabled: false
             });
         }
         setShowModal(true);
@@ -353,6 +356,20 @@ const AdminProducts = () => {
                                         className="input"
                                     />
                                 </div>
+                            </div>
+
+                            {/* Toptan Satış Toggle */}
+                            <div className="flex items-center gap-3 p-3 bg-light-50 dark:bg-dark-700/50 rounded-lg">
+                                <input
+                                    type="checkbox"
+                                    id="wholesaleEnabled"
+                                    checked={formData.wholesaleEnabled}
+                                    onChange={(e) => setFormData({ ...formData, wholesaleEnabled: e.target.checked })}
+                                    className="w-4 h-4 rounded border-light-400 dark:border-dark-500 text-primary-500 focus:ring-primary-500"
+                                />
+                                <label htmlFor="wholesaleEnabled" className="text-sm font-medium text-light-800 dark:text-white cursor-pointer">
+                                    Toptan satışa izin ver
+                                </label>
                             </div>
 
                             {/* Renk Slotları */}

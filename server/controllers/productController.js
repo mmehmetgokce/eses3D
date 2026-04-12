@@ -6,9 +6,13 @@ import { cloudinary } from '../config/cloudinary.js';
 // @access  Public
 export const getProducts = async (req, res) => {
     try {
-        const { category, search } = req.query;
+        const { category, search, wholesale } = req.query;
 
         let query = { isActive: true };
+
+        if (wholesale === 'true') {
+            query.wholesaleEnabled = true;
+        }
 
         if (category) {
             query.categories = category;

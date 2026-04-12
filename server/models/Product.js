@@ -37,6 +37,10 @@ const productSchema = new mongoose.Schema({
         label: { type: String, default: '' },
         allowedColors: [String]
     }],
+    wholesaleEnabled: {
+        type: Boolean,
+        default: false
+    },
     isActive: {
         type: Boolean,
         default: true

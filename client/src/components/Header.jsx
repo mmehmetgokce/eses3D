@@ -12,6 +12,7 @@ const Header = () => {
     const navLinks = [
         { to: '/', label: 'Ana Sayfa' },
         { to: '/urunler', label: 'Ürünler' },
+        { to: '/toptan', label: 'Toptan Satış' },
         { to: '/ozel-tasarim', label: 'Özel Tasarım ve İstekler' },
     ];
 

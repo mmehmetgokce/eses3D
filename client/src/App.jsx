@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { Toaster } from 'react-hot-toast';
 import { RequestProvider } from './context/RequestContext';
+import { WholesaleProvider } from './context/WholesaleContext';
 import { ThemeProvider } from './context/ThemeContext';
 
 // Layout
@@ -14,6 +15,7 @@ import ProductDetailPage from './pages/ProductDetailPage';
 import RequestListPage from './pages/RequestListPage';
 import RequestSuccessPage from './pages/RequestSuccessPage';
 import CustomDesignPage from './pages/CustomDesignPage';
+import WholesalePage from './pages/WholesalePage';
 
 // Admin Pages
 import AdminLogin from './pages/admin/AdminLogin';
@@ -29,6 +31,7 @@ function App() {
         <ThemeProvider>
             <HelmetProvider>
                 <RequestProvider>
+                    <WholesaleProvider>
                     <Router>
                         <Toaster
                             position="top-right"
@@ -63,6 +66,7 @@ function App() {
                                 <Route path="talep-listem" element={<RequestListPage />} />
                                 <Route path="talep-basarili/:requestId" element={<RequestSuccessPage />} />
                                 <Route path="ozel-tasarim" element={<CustomDesignPage />} />
+                                <Route path="toptan" element={<WholesalePage />} />
                             </Route>
 
                             {/* Admin Routes */}
@@ -82,6 +86,7 @@ function App() {
                             </Route>
                         </Routes>
                     </Router>
+                    </WholesaleProvider>
                 </RequestProvider>
             </HelmetProvider>
         </ThemeProvider>

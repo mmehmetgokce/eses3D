@@ -6,7 +6,7 @@ import { sendNewRequestNotification } from '../services/emailService.js';
 // @access  Public
 export const createRequest = async (req, res) => {
     try {
-        const { customerName, customerSurname, customerPhone, items, generalNote } = req.body;
+        const { customerName, customerSurname, customerPhone, items, generalNote, isWholesale, discountPercent } = req.body;
 
         if (!items || items.length === 0) {
             return res.status(400).json({
@@ -31,7 +31,9 @@ export const createRequest = async (req, res) => {
             customerSurname,
             customerPhone,
             items,
-            generalNote
+            generalNote,
+            isWholesale: isWholesale || false,
+            discountPercent: discountPercent || 0
         });
 
         res.status(201).json({

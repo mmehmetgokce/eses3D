@@ -68,8 +68,8 @@ export const sendNewRequestNotification = async (request) => {
 
     const html = `
     <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden;">
-        <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 24px; text-align: center;">
-            <h1 style="margin: 0; color: #ffffff; font-size: 20px;">🔔 Yeni Talep Alındı</h1>
+        <div style="background: linear-gradient(135deg, ${request.isWholesale ? '#f59e0b, #d97706' : '#6366f1, #8b5cf6'}); padding: 24px; text-align: center;">
+            <h1 style="margin: 0; color: #ffffff; font-size: 20px;">${request.isWholesale ? '📦 Yeni Toptan Talep Alındı' : '🔔 Yeni Talep Alındı'}</h1>
             <p style="margin: 8px 0 0; color: rgba(255,255,255,0.85); font-size: 14px;">${request.requestId}</p>
         </div>
         <div style="padding: 24px;">

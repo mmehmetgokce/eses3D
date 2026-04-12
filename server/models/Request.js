@@ -55,6 +55,14 @@ const requestSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
+    isWholesale: {
+        type: Boolean,
+        default: false
+    },
+    discountPercent: {
+        type: Number,
+        default: 0
+    },
     status: {
         type: String,
         enum: ['pending', 'contacted', 'completed', 'cancelled'],

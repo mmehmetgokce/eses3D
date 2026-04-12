@@ -201,7 +201,12 @@ const AdminRequests = () => {
                                 {requests.map((request) => (
                                     <tr key={request._id} className="hover:bg-light-100 dark:hover:bg-dark-700/50">
                                         <td className="p-4">
-                                            <span className="font-medium text-primary-600 dark:text-primary-400">{request.requestId}</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-medium text-primary-600 dark:text-primary-400">{request.requestId}</span>
+                                                {request.isWholesale && (
+                                                    <span className="text-[10px] font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded">TOPTAN</span>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="p-4">
                                             <div>
